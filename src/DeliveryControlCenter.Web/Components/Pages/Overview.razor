@@ -1,0 +1,67 @@
+@page "/"
+@rendermode InteractiveServer
+@inject DeliveryApiClient Api
+@inject DeliveryRealtimeClient Realtime
+@implements IAsyncDisposable
+
+<PageTitle>Overview</PageTitle>
+
+<h1>Delivery overview</h1>
+
+@if (_overview is null)
+{
+    <p class="muted">Waiting for the first sync cycle&hellip;</p>
+}
+else
+{
+    <p class="muted">
+        Repository <strong>@_overview.Repository</strong> &middot;
+        last synced @(_overview.LastSyncedAtUtc?.ToString("u") ?? "never")
+    </p>
+
+    <div class="metric-grid">
+        <div class="metric"><span class="metric-value">@_overview.OpenIssues</span><span class="metric-label">Open issues</span></div>
+        <div class="metric"><span class="metric-value">@_overview.OpenPullRequests</span><span class="metric-label">Open pull requests</span></div>
+        <div class="metric"><span class="metric-value">@_overview.AwaitingHumanAuthorization</span><span class="metric-label">Awaiting human</span></div>
+        <div class="metric @(_overview.GateFailures > 0 ? "metric-alert" : string.Empty)"><span class="metric-value">@_overview.GateFailures</span><span class="metric-label">Gate failures</span></div>
+        <div class="metric @(_overview.NeedsHuman > 0 ? "metric-alert" : string.Empty)"><span class="metric-value">@_overview.NeedsHuman</span><span class="metric-label">Needs human</span></div>
+        <div class="metric"><span class="metric-value">@_overview.GatePassRate.ToString("P0")</span><span class="metric-label">Gate pass rate</span></div>
+    </div>
+
+    <h2>Stage breakdown</h2>
+    <table class="data-table">
+        <thead><tr><th>Stage</th><th>Count</th></tr></thead>
+        <tbody>
+        @foreach (var stage in _overview.StageBreakdown)
+        {
+            <tr><td>@stage.Stage</td><td>@stage.Count</td></tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    private DeliveryOverviewDto? _overview;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+        Realtime.Changed += OnChangedAsync;
+        await Realtime.EnsureConnectedAsync();
+    }
+
+    private async Task LoadAsync() => _overview = await Api.GetOverviewAsync();
+
+    private async Task OnChangedAsync(DeliveryNotification notification)
+    {
+        // Refetch rather than trusting the pushed payload.
+        await LoadAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        Realtime.Changed -= OnChangedAsync;
+        return ValueTask.CompletedTask;
+    }
+}

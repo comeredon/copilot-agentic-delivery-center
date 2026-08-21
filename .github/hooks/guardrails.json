@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json.schemastore.org/copilot-hooks.json",
+  "description": "Mechanical guardrails for agent sessions. These deny the actions the instruction layer forbids, so a compliant agent is never blocked and a non-compliant one cannot proceed. Authoritative control still rests with branch protection, required checks, least-privilege tokens, and the human merge signal.",
+  "version": 1,
+  "hooks": {
+    "preToolUse": [
+      {
+        "name": "deny-dangerous-actions",
+        "description": "Blocks merges, pushes to main, destructive commands, credential reads, and guardrail edits.",
+        "matcher": {
+          "tools": ["execute", "edit", "read"]
+        },
+        "command": {
+          "windows": "pwsh -NoProfile -ExecutionPolicy Bypass -File eng/agent-hooks/pre-tool-use.ps1",
+          "linux": "bash eng/agent-hooks/pre-tool-use.sh",
+          "darwin": "bash eng/agent-hooks/pre-tool-use.sh"
+        },
+        "timeoutSeconds": 5
+      }
+    ],
+    "postToolUse": [
+      {
+        "name": "audit-tool-use",
+        "description": "Appends a sanitized record of every tool invocation to the local audit trail.",
+        "command": {
+          "windows": "pwsh -NoProfile -ExecutionPolicy Bypass -File eng/agent-hooks/post-tool-use.ps1",
+          "linux": "bash eng/agent-hooks/post-tool-use.sh",
+          "darwin": "bash eng/agent-hooks/post-tool-use.sh"
+        },
+        "timeoutSeconds": 5
+      }
+    ],
+    "subagentStop": [
+      {
+        "name": "record-subagent-verdict",
+        "description": "Captures each subagent's terminal verdict so the gate ledger can cite it.",
+        "command": {
+          "windows": "pwsh -NoProfile -ExecutionPolicy Bypass -File eng/agent-hooks/subagent-stop.ps1",
+          "linux": "bash eng/agent-hooks/subagent-stop.sh",
+          "darwin": "bash eng/agent-hooks/subagent-stop.sh"
+        },
+        "timeoutSeconds": 5
+      }
+    ],
+    "errorOccurred": [
+      {
+        "name": "record-error-class",
+        "description": "Records the error class and the tool that raised it. Never records payloads.",
+        "command": {
+          "windows": "pwsh -NoProfile -ExecutionPolicy Bypass -File eng/agent-hooks/error-occurred.ps1",
+          "linux": "bash eng/agent-hooks/error-occurred.sh",
+          "darwin": "bash eng/agent-hooks/error-occurred.sh"
+        },
+        "timeoutSeconds": 5
+      }
+    ],
+    "sessionEnd": [
+      {
+        "name": "emit-session-summary",
+        "description": "Writes a schema-checked summary of the session's tool use, denials, and errors.",
+        "command": {
+          "windows": "pwsh -NoProfile -ExecutionPolicy Bypass -File eng/agent-hooks/session-end.ps1",
+          "linux": "bash eng/agent-hooks/session-end.sh",
+          "darwin": "bash eng/agent-hooks/session-end.sh"
+        },
+        "timeoutSeconds": 5
+      }
+    ]
+  },
+  "policy": {
+    "deniedCommandPatterns": [
+      "gh\\s+pr\\s+merge",
+      "gh\\s+pr\\s+.*--auto",
+      "gh\\s+api\\s+.*\\/merge",
+      "gh\\s+ruleset",
+      "gh\\s+api\\s+.*branch_protection",
+      "git\\s+push\\s+.*(^|\\s)(main|origin\\s+main)(\\s|$)",
+      "git\\s+push\\s+.*--force",
+      "git\\s+push\\s+.*-f(\\s|$)",
+      "git\\s+reset\\s+--hard",
+      "git\\s+clean\\s+-[a-z]*f",
+      "git\\s+.*--no-verify",
+      "rm\\s+-rf",
+      "Remove-Item\\s+.*-Recurse\\s+.*-Force",
+      "curl\\s+.*\\|\\s*(bash|sh|pwsh)",
+      "iwr\\s+.*\\|\\s*iex",
+      "Invoke-Expression"
+    ],
+    "deniedPathPatterns": [
+      "^\\.github/hooks/",
+      "^\\.github/workflows/",
+      "^\\.mcp\\.json$",
+      "^CODEOWNERS$",
+      "^\\.github/CODEOWNERS$",
+      "(^|/)\\.env($|\\.)",
+      "\\.pem$",
+      "\\.pfx$",
+      "\\.p12$",
+      "(^|/)id_rsa",
+      "(^|/)secrets?\\.(json|ya?ml|txt)$",
+      "\\.npmrc$",
+      "\\.git-credentials$"
+    ],
+    "auditDirectory": ".agent-runtime",
+    "notes": [
+      "The audit directory is git-ignored. It is a local forensic trail, not a committed artifact.",
+      "Hooks must complete within 5 seconds, parse stdin defensively, and never echo a matched secret."
+    ]
+  }
+}

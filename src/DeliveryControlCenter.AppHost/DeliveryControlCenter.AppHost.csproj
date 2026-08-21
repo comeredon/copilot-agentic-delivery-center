@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Sdk Name="Aspire.AppHost.Sdk" Version="13.4.6" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>DeliveryControlCenter.AppHost</RootNamespace>
+    <IsAspireHost>true</IsAspireHost>
+    <UserSecretsId>delivery-control-center-apphost</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.AppHost" />
+    <PackageReference Include="Aspire.Hosting.PostgreSQL" />
+    <PackageReference Include="Aspire.Hosting.Redis" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../DeliveryControlCenter.Api/DeliveryControlCenter.Api.csproj" />
+    <ProjectReference Include="../DeliveryControlCenter.MigrationService/DeliveryControlCenter.MigrationService.csproj" />
+    <ProjectReference Include="../DeliveryControlCenter.Web/DeliveryControlCenter.Web.csproj" />
+    <ProjectReference Include="../DeliveryControlCenter.Worker/DeliveryControlCenter.Worker.csproj" />
+  </ItemGroup>
+
+</Project>

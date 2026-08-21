@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/comeredon/copilot-agentic-delivery-center/schemas/agent-evidence.schema.json",
+  "title": "Agent evidence record",
+  "description": "A single claim an agent made, with the source that backs it. Claims without evidence are rejected at the gate.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "source",
+    "severity",
+    "summary",
+    "model"
+  ],
+  "properties": {
+    "source": {
+      "type": "string",
+      "enum": [
+        "build",
+        "test",
+        "analyzer",
+        "architecture",
+        "threat-model",
+        "review",
+        "documentation"
+      ]
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "info",
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ]
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "model": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "references": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 512
+      }
+    }
+  }
+}

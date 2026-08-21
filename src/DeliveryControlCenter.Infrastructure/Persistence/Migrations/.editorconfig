@@ -1,0 +1,6 @@
+# EF Core scaffolds these files; they are not hand-maintained, so project style rules do not apply.
+[*.cs]
+generated_code = true
+dotnet_analyzer_diagnostic.severity = none
+dotnet_diagnostic.IDE0161.severity = none
+dotnet_diagnostic.CA1861.severity = none

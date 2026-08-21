@@ -1,0 +1,35 @@
+## Build output
+bin/
+obj/
+artifacts/
+[Dd]ebug/
+[Rr]elease/
+*.user
+*.suo
+.vs/
+.vscode/*
+!.vscode/extensions.json
+
+## Agent runtime audit output - local only, never committed
+.agent-runtime/
+
+## Test + coverage
+TestResults/
+coverage/
+*.coverage
+*.trx
+playwright-report/
+.playwright/
+
+## Secrets - never commit
+*.pfx
+*.pem
+*.key
+.env
+.env.*
+appsettings.Local.json
+appsettings.*.Local.json
+
+## OS
+.DS_Store
+Thumbs.db

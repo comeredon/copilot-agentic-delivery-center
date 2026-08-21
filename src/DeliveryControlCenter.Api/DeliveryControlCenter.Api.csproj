@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <RootNamespace>DeliveryControlCenter.Api</RootNamespace>
+    <UserSecretsId>delivery-control-center-api</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../DeliveryControlCenter.Infrastructure/DeliveryControlCenter.Infrastructure.csproj" />
+    <ProjectReference Include="../DeliveryControlCenter.ServiceDefaults/DeliveryControlCenter.ServiceDefaults.csproj" />
+  </ItemGroup>
+
+</Project>

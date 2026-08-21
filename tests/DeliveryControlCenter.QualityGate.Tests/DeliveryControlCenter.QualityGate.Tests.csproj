@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>DeliveryControlCenter.QualityGateTests</RootNamespace>
+    <AssemblyName>DeliveryControlCenter.QualityGate.Tests</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../tools/DeliveryControlCenter.QualityGate/DeliveryControlCenter.QualityGate.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <RootNamespace>DeliveryControlCenter.MigrationService</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../DeliveryControlCenter.Infrastructure/DeliveryControlCenter.Infrastructure.csproj" />
+    <ProjectReference Include="../DeliveryControlCenter.ServiceDefaults/DeliveryControlCenter.ServiceDefaults.csproj" />
+  </ItemGroup>
+
+</Project>

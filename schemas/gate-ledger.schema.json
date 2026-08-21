@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/comeredon/copilot-agentic-delivery-center/schemas/gate-ledger.schema.json",
+  "title": "Gate ledger entry",
+  "description": "One hash-chained rubber-duck record. The proposer and the verifier must be different agents.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "sequence",
+    "gateId",
+    "evidenceHash",
+    "proposer",
+    "verifier",
+    "agreed",
+    "previousEntryHash",
+    "entryHash"
+  ],
+  "properties": {
+    "sequence": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "gateId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "evidenceHash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "proposer": {
+      "$ref": "#/$defs/verdict"
+    },
+    "verifier": {
+      "$ref": "#/$defs/verdict"
+    },
+    "agreed": {
+      "type": "boolean"
+    },
+    "previousEntryHash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$|^genesis$"
+    },
+    "entryHash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    }
+  },
+  "$defs": {
+    "verdict": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "agent",
+        "model",
+        "verdict"
+      ],
+      "properties": {
+        "agent": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "verdict": {
+          "type": "string",
+          "enum": [
+            "pass",
+            "fail",
+            "inconclusive"
+          ]
+        }
+      }
+    }
+  }
+}

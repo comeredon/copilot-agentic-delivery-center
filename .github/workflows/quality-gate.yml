@@ -1,0 +1,71 @@
+name: quality-gate
+
+# The gate is the only thing that decides whether a change is acceptable. This workflow runs it at
+# the 'ci' profile, which requires the integration tests — a container runtime is available here,
+# so there is no reason to accept the weaker cloud profile.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gate:
+    name: Quality gate (ci profile)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: Restore with locked mode
+        run: dotnet restore --locked-mode
+
+      - name: Run the quality gate
+        run: >
+          dotnet run --project tools/DeliveryControlCenter.QualityGate --
+          --profile ci
+          --commit ${{ github.sha }}
+          --output artifacts/quality-report.json
+
+      # Uploaded whether the gate passed or failed: a failing report is the evidence a human needs.
+      - name: Upload the gate report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-report
+          path: artifacts/quality-report.json
+          if-no-files-found: error
+
+  guardrails:
+    name: Guardrail fixtures
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      # A guardrail nobody tests is a guardrail nobody can rely on.
+      - name: Verify hook deny and allow decisions
+        shell: pwsh
+        run: ./eng/tests/Test-Guardrails.ps1

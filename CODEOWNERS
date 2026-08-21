@@ -1,0 +1,16 @@
+# Every path in this repository requires the owner's review.
+#
+# The guardrail files are listed separately and explicitly. That redundancy is deliberate: if the
+# global rule is ever narrowed, these specific entries still stand, and the files that define the
+# agent's boundaries remain human-reviewed.
+
+*                       @comeredon
+
+/.github/hooks/         @comeredon
+/.github/workflows/     @comeredon
+/.github/agents/        @comeredon
+/.github/instructions/  @comeredon
+/.mcp.json              @comeredon
+/CODEOWNERS             @comeredon
+/schemas/               @comeredon
+/eng/agent-hooks/       @comeredon

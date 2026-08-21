@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>DeliveryControlCenter.UnitTests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/DeliveryControlCenter.Application/DeliveryControlCenter.Application.csproj" />
+  </ItemGroup>
+
+</Project>

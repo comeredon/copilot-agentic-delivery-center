@@ -1,0 +1,15 @@
+# Normalise line endings in the repository so a hash computed on Windows matches one computed on
+# Linux. This matters here: the quality gate hashes content, and a CRLF/LF difference would make
+# an identical change produce a different canonical hash on a different platform.
+* text=auto eol=lf
+
+# Shell scripts must keep LF or they will not execute on Linux runners.
+*.sh text eol=lf
+
+# PowerShell scripts are fine either way; keep them LF for consistency.
+*.ps1 text eol=lf
+
+*.png binary
+*.jpg binary
+*.ico binary
+*.pdf binary

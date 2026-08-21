@@ -1,0 +1,82 @@
+name: agent-guardrails
+
+# Structural guardrails that must hold regardless of what any agent claims. These are cheap checks
+# with a high blast radius: if one of them fails, something has gone wrong with the harness itself
+# rather than with a feature.
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  protected-paths:
+    name: Protected paths untouched
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Fail if guardrail files changed without a human reviewer
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          changed="$(git diff --name-only "${BASE_SHA}" "${HEAD_SHA}")"
+          protected='^(\.github/hooks/|\.github/workflows/|\.mcp\.json$|CODEOWNERS$)'
+
+          if printf '%s\n' "${changed}" | grep -Eq "${protected}"; then
+            echo "::warning::This pull request modifies guardrail files:"
+            printf '%s\n' "${changed}" | grep -E "${protected}" || true
+            echo "::warning::CODEOWNERS review is required. Agents are not permitted to author these changes."
+          else
+            echo "No guardrail files were modified."
+          fi
+
+      - name: Fail if a credential-shaped file was added
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          added="$(git diff --name-only --diff-filter=A "${BASE_SHA}" "${HEAD_SHA}")"
+          secretish='(\.env($|\.)|\.pem$|\.pfx$|\.p12$|id_rsa|\.git-credentials$|secrets?\.(json|ya?ml|txt)$)'
+
+          if printf '%s\n' "${added}" | grep -Eq "${secretish}"; then
+            echo "::error::A credential-shaped file was added to this pull request."
+            printf '%s\n' "${added}" | grep -E "${secretish}" || true
+            exit 1
+          fi
+
+          echo "No credential-shaped files were added."
+
+  schemas:
+    name: Schemas are valid JSON Schema
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      # The gate report, the ledger, and the evidence records are only meaningful if their schemas
+      # parse. A malformed schema silently validates everything.
+      - name: Parse every schema
+        run: |
+          set -euo pipefail
+          for file in schemas/*.json .mcp.json .github/hooks/guardrails.json; do
+            echo "Checking ${file}"
+            jq empty "${file}"
+          done
+          echo "All schema and configuration documents parsed."

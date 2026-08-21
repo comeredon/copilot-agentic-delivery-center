@@ -1,0 +1,86 @@
+@page "/board"
+@rendermode InteractiveServer
+@inject DeliveryApiClient Api
+@inject DeliveryRealtimeClient Realtime
+@implements IAsyncDisposable
+
+<PageTitle>Board</PageTitle>
+
+<h1>Delivery board</h1>
+
+<div class="filter-bar">
+    <input class="filter-input" placeholder="Filter by title or number" @bind="_filter" @bind:event="oninput" />
+    <select class="filter-input" @bind="_stageFilter">
+        <option value="">All stages</option>
+        @foreach (var stage in _stages)
+        {
+            <option value="@stage">@stage</option>
+        }
+    </select>
+</div>
+
+@if (_items.Count == 0)
+{
+    <p class="muted">No work items yet.</p>
+}
+else
+{
+    <table class="data-table">
+        <thead>
+        <tr><th>#</th><th>Kind</th><th>Title</th><th>State</th><th>Stage</th><th>Risk</th><th>Updated</th></tr>
+        </thead>
+        <tbody>
+        @foreach (var item in Filtered)
+        {
+            <tr>
+                <td><a href="@($"work-items/{item.Id}")">@item.Number</a></td>
+                <td>@item.Kind</td>
+                <td>@item.Title</td>
+                <td>@item.State</td>
+                <td><span class="stage-chip stage-@item.Stage.ToLowerInvariant()">@item.Stage</span></td>
+                <td>@item.Risk</td>
+                <td>@item.UpdatedAtUtc.ToString("u")</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IReadOnlyList<WorkItemSummaryDto> _items = [];
+    private string _filter = string.Empty;
+    private string _stageFilter = string.Empty;
+    private string[] _stages = [];
+
+    private IEnumerable<WorkItemSummaryDto> Filtered =>
+        _items.Where(i =>
+            (string.IsNullOrWhiteSpace(_stageFilter) || i.Stage == _stageFilter) &&
+            (string.IsNullOrWhiteSpace(_filter) ||
+             i.Title.Contains(_filter, StringComparison.OrdinalIgnoreCase) ||
+             i.Number.ToString().Contains(_filter, StringComparison.Ordinal)));
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+        Realtime.Changed += OnChangedAsync;
+        await Realtime.EnsureConnectedAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _items = await Api.GetWorkItemsAsync();
+        _stages = [.. _items.Select(i => i.Stage).Distinct().Order()];
+    }
+
+    private async Task OnChangedAsync(DeliveryNotification notification)
+    {
+        await LoadAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        Realtime.Changed -= OnChangedAsync;
+        return ValueTask.CompletedTask;
+    }
+}

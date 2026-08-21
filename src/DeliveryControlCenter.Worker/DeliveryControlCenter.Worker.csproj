@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <RootNamespace>DeliveryControlCenter.Worker</RootNamespace>
+    <UserSecretsId>delivery-control-center-worker</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../DeliveryControlCenter.Infrastructure/DeliveryControlCenter.Infrastructure.csproj" />
+    <ProjectReference Include="../DeliveryControlCenter.ServiceDefaults/DeliveryControlCenter.ServiceDefaults.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <RootNamespace>DeliveryControlCenter.Web</RootNamespace>
+    <UserSecretsId>delivery-control-center-web</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../DeliveryControlCenter.Contracts/DeliveryControlCenter.Contracts.csproj" />
+    <ProjectReference Include="../DeliveryControlCenter.ServiceDefaults/DeliveryControlCenter.ServiceDefaults.csproj" />
+  </ItemGroup>
+
+</Project>
