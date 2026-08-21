@@ -44,8 +44,8 @@ synthesis deduplicating a finding both of them raised.
 Run it **twice**:
 
 ```
-dotnet run --project tools/DeliveryControlCenter.QualityGate -- --profile local --commit <sha>
-dotnet run --project tools/DeliveryControlCenter.QualityGate -- --profile local --commit <sha>
+dotnet run --project tools/DeliveryControlCenter.QualityGate --artifacts-path artifacts/gate-host -- --profile local --commit <sha>
+dotnet run --project tools/DeliveryControlCenter.QualityGate --artifacts-path artifacts/gate-host -- --profile local --commit <sha>
 ```
 
 Identical canonical hash, different `envelope.generatedAtUtc`. That contrast is the clearest single

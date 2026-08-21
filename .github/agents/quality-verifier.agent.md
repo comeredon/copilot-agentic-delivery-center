@@ -15,8 +15,11 @@ You have no `edit` tool. A verifier that can change the thing it is verifying is
 ## The one command
 
 ```
-dotnet run --project tools/DeliveryControlCenter.QualityGate -- --profile <cloud|ci|local> --commit <sha>
+dotnet run --project tools/DeliveryControlCenter.QualityGate --artifacts-path artifacts/gate-host -- --profile <cloud|ci|local> --commit <sha>
 ```
+
+`--artifacts-path` is required. The gate builds the whole solution as one of its checks, and that
+build would otherwise overwrite the gate binary while it is still running.
 
 Choose the profile by what the environment can actually do:
 

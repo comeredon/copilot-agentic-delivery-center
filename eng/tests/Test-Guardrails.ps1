@@ -32,7 +32,7 @@ $cases = @(
     @{ Name = 'malformed payload';       Expected = 'deny';  Payload = 'this is not json' }
     @{ Name = 'ordinary build';          Expected = 'allow'; Payload = '{"tool":"execute","command":"dotnet build DeliveryControlCenter.slnx"}' }
     @{ Name = 'ordinary test';           Expected = 'allow'; Payload = '{"tool":"execute","command":"dotnet test tests/DeliveryControlCenter.UnitTests"}' }
-    @{ Name = 'quality gate';            Expected = 'allow'; Payload = '{"tool":"execute","command":"dotnet run --project tools/DeliveryControlCenter.QualityGate -- --profile ci --commit abc1234"}' }
+    @{ Name = 'quality gate';            Expected = 'allow'; Payload = '{"tool":"execute","command":"dotnet run --project tools/DeliveryControlCenter.QualityGate --artifacts-path artifacts/gate-host -- --profile ci --commit abc1234"}' }
     @{ Name = 'ordinary source edit';    Expected = 'allow'; Payload = '{"tool":"edit","path":"src/DeliveryControlCenter.Domain/Delivery/WorkItem.cs"}' }
     @{ Name = 'branch push';             Expected = 'allow'; Payload = '{"tool":"execute","command":"git push origin feature/add-sync"}' }
 )

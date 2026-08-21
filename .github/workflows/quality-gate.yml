@@ -39,8 +39,10 @@ jobs:
         run: dotnet restore --locked-mode
 
       - name: Run the quality gate
+        # --artifacts-path keeps the gate binary out of the solution build the gate itself runs.
         run: >
-          dotnet run --project tools/DeliveryControlCenter.QualityGate --
+          dotnet run --project tools/DeliveryControlCenter.QualityGate
+          --artifacts-path artifacts/gate-host --
           --profile ci
           --commit ${{ github.sha }}
           --output artifacts/quality-report.json
@@ -69,3 +71,25 @@ jobs:
       - name: Verify hook deny and allow decisions
         shell: pwsh
         run: ./eng/tests/Test-Guardrails.ps1
+
+  determinism:
+    name: Gate determinism
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      # Two runs of the same commit must produce the same canonical hash and different timestamps.
+      # If this fails, something non-reproducible has leaked into the hashed section of the report.
+      - name: Run the gate twice and compare hashes
+        shell: pwsh
+        run: ./eng/tests/Test-GateDeterminism.ps1 -Profile ci

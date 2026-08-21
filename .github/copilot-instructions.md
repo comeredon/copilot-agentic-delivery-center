@@ -19,7 +19,11 @@ Run these from the repository root. They are known-good; do not invent alternati
 | Format check | `dotnet format --verify-no-changes` |
 | Add a migration | `dotnet ef migrations add <Name> --project src/DeliveryControlCenter.Infrastructure --output-dir Persistence/Migrations` |
 | Run everything (Aspire) | `dotnet run --project src/DeliveryControlCenter.AppHost` |
-| **The quality gate** | `dotnet run --project tools/DeliveryControlCenter.QualityGate -- --profile <cloud\|ci\|local> --commit <sha>` |
+| **The quality gate** | `dotnet run --project tools/DeliveryControlCenter.QualityGate --artifacts-path artifacts/gate-host -- --profile <cloud\|ci\|local> --commit <sha>` |
+
+The `--artifacts-path` flag is not optional. The gate builds the whole solution as one of its
+checks, and that build would otherwise overwrite the gate binary while it is still running. The
+separate artifacts path keeps the running tool out of its own build output.
 
 The quality gate is the single source of truth for "is this change acceptable". Do not assemble
 your own pass/fail judgement from individual command output.

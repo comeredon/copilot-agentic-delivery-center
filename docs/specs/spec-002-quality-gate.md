@@ -74,9 +74,9 @@ forget — there is no code path that produces an entry without it.
 
 | Requirement | Test |
 |---|---|
-| REQ-101 | Manual: `dotnet run --project tools/DeliveryControlCenter.QualityGate -- --dry-run --profile ci --commit abc1234` |
+| REQ-101 | Manual: `dotnet run --project tools/DeliveryControlCenter.QualityGate --artifacts-path artifacts/gate-host -- --profile cloud --commit <sha>` |
 | REQ-102 | `ReportBuilderTests.CanonicalHash_IgnoresTimestampsAndDurations` |
-| REQ-103 | `ReportBuilderTests.CanonicalHash_IgnoresTimestampsAndDurations`, `CanonicalJsonTests.Hash_IsStableAndPrefixed` |
+| REQ-103 | `ReportBuilderTests.CanonicalHash_IgnoresTimestampsAndDurations`, `eng/tests/Test-GateDeterminism.ps1` (runs the real gate twice) |
 | REQ-104 | `ReportBuilderTests.Report_ValidatesAgainstTheCommittedSchema`, `ReportBuilderTests.Validator_RejectsAMalformedReport` |
 | REQ-105 | `GateReportTests.SatisfiesRequirement_ComparesProfileStrength` |
 | REQ-106 | `ReportBuilderTests.Verdict_IgnoresOptionalChecks` |

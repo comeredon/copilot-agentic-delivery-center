@@ -25,8 +25,11 @@ without being blocked.
 ## The one command that decides
 
 ```
-dotnet run --project tools/DeliveryControlCenter.QualityGate -- --profile <cloud|ci|local> --commit <sha>
+dotnet run --project tools/DeliveryControlCenter.QualityGate --artifacts-path artifacts/gate-host -- --profile <cloud|ci|local> --commit <sha>
 ```
+
+`--artifacts-path` is required: the gate builds the whole solution as one of its checks, and that
+build would otherwise overwrite the gate binary while it is still running.
 
 Do not assemble your own verdict from individual command output. The gate is the source of truth,
 its report is content-addressed, and its verdict is what gets recorded.

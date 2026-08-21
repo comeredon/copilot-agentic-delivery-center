@@ -1,8 +1,8 @@
 using DeliveryControlCenter.Application.Abstractions;
+using DeliveryControlCenter.Contracts.Realtime;
 using DeliveryControlCenter.Domain.Audit;
 using DeliveryControlCenter.Domain.Delivery;
 using DeliveryControlCenter.Domain.Sync;
-using DeliveryControlCenter.Contracts.Realtime;
 using Microsoft.Extensions.Logging;
 
 namespace DeliveryControlCenter.Application.Delivery;

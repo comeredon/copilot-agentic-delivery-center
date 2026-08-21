@@ -10,7 +10,7 @@ Run the canonical gate and report exactly what it said.
 ## Run it
 
 ```
-dotnet run --project tools/DeliveryControlCenter.QualityGate -- --profile ${input:profile:ci} --commit ${input:commit}
+dotnet run --project tools/DeliveryControlCenter.QualityGate --artifacts-path artifacts/gate-host -- --profile ${input:profile:ci} --commit ${input:commit}
 ```
 
 Pick the profile by what this environment can actually do. `cloud` has no container runtime, so

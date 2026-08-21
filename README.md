@@ -14,7 +14,7 @@ independently verified before a human is asked to make a merge decision.
 |---|---|
 | Agents cannot merge | `pwsh -NoProfile -File eng/tests/Test-Guardrails.ps1` — 20 fixture cases |
 | Agents verify each other | `GateLedgerEntry.Append` throws when proposer and verifier match |
-| The verdict is reproducible | Run the gate twice; identical `canonicalHash`, different `generatedAtUtc` |
+| The verdict is reproducible | `pwsh -NoProfile -File eng/tests/Test-GateDeterminism.ps1` — two real runs, one hash |
 | Layers are enforced, not suggested | `dotnet test tests/DeliveryControlCenter.ArchitectureTests` |
 | Skipped checks are visible | The `cloud` profile records integration tests as skipped, never as passed |
 
@@ -43,7 +43,12 @@ point at a real repository.
 | Gate determinism tests | `dotnet test tests/DeliveryControlCenter.QualityGate.Tests` |
 | Integration tests | `dotnet test tests/DeliveryControlCenter.IntegrationTests` |
 | Guardrail fixtures | `pwsh -NoProfile -File eng/tests/Test-Guardrails.ps1` |
-| **The quality gate** | `dotnet run --project tools/DeliveryControlCenter.QualityGate -- --profile local --commit <sha>` |
+| Gate determinism | `pwsh -NoProfile -File eng/tests/Test-GateDeterminism.ps1` |
+| **The quality gate** | `dotnet run --project tools/DeliveryControlCenter.QualityGate --artifacts-path artifacts/gate-host -- --profile local --commit <sha>` |
+
+`--artifacts-path` keeps the running gate binary out of the solution build the gate itself
+performs. Without it the build check fails with a file lock — which is exactly how the defect was
+found.
 
 ## Architecture
 
