@@ -9,7 +9,7 @@ namespace DeliveryControlCenter.Infrastructure.Caching;
 /// protection provided by the underlying implementation. Counters are exposed so the UI can
 /// show hit ratio and prove invalidation actually happens.
 /// </summary>
-internal sealed class HybridDeliveryCache(HybridCache cache, ILogger<HybridDeliveryCache> logger) : IDeliveryCache
+internal sealed class HybridDeliveryCache(HybridCache cache, ILogger<HybridDeliveryCache> logger) : IStoreCache
 {
     private long _hits;
     private long _misses;
@@ -21,6 +21,7 @@ internal sealed class HybridDeliveryCache(HybridCache cache, ILogger<HybridDeliv
         Func<CancellationToken, ValueTask<T>> factory,
         TimeSpan localExpiration,
         TimeSpan distributedExpiration,
+        IReadOnlyCollection<string> tags,
         CancellationToken cancellationToken)
     {
         var produced = false;
@@ -39,6 +40,7 @@ internal sealed class HybridDeliveryCache(HybridCache cache, ILogger<HybridDeliv
                     LocalCacheExpiration = localExpiration,
                     Expiration = distributedExpiration,
                 },
+                tags,
                 cancellationToken: cancellationToken);
 
             if (produced)
@@ -67,9 +69,10 @@ internal sealed class HybridDeliveryCache(HybridCache cache, ILogger<HybridDeliv
         await cache.RemoveAsync(key, cancellationToken);
     }
 
-    public CacheCounters Snapshot() => new(
-        Interlocked.Read(ref _hits),
-        Interlocked.Read(ref _misses),
-        Interlocked.Read(ref _invalidations),
-        Interlocked.Read(ref _errors));
+    public async Task InvalidateTagAsync(string tag, CancellationToken cancellationToken)
+    {
+        Interlocked.Increment(ref _invalidations);
+        await cache.RemoveByTagAsync(tag, cancellationToken);
+    }
+
 }

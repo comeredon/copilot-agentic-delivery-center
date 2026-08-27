@@ -1,5 +1,13 @@
 # SPEC-002 — Quality gate and ledger
 
+## Current status
+
+The deterministic gate and requirements `REQ-101` through `REQ-106` and `REQ-110` are implemented.
+The ledger domain invariant for `REQ-107` through `REQ-109` is implemented and unit-tested, but the
+coffee-store baseline removed the old database table and repository. No durable ledger publisher or
+trusted evidence-ingestion path ships today. Local tests prove the rule; they do not prove a record
+was published for a merge decision.
+
 ## Problem
 
 "The agent says it works" is not an acceptable basis for a merge decision. We need a verdict that is
@@ -69,6 +77,10 @@ which is the tamper-evidence property.
 
 The proposer/verifier check lives in the domain and throws. It is not a policy an orchestrator can
 forget — there is no code path that produces an entry without it.
+
+Durable append, current-tip lookup, schema validation of an emitted record, and read-back from a
+trusted sink remain connected-harness work. Until those exist, the ledger scene is explicitly a
+domain proof rather than a persisted audit record.
 
 ## Verification
 

@@ -27,6 +27,8 @@ adversarial — it starts defending its own preferred design.
    dictionary enumeration into a hashed path?
 6. **Blast radius.** If this is wrong, what else breaks? Prefer designs that fail loudly and
    locally over designs that degrade quietly and globally.
+7. **Product/harness separation.** Coffee product code never calls GitHub or Copilot. Project,
+   pull-request, evidence, and agent concerns stay in the external harness.
 
 ## How to report
 

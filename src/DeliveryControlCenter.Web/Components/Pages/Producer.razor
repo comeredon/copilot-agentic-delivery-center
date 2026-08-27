@@ -1,0 +1,44 @@
+@page "/producer/{Slug}"
+@rendermode InteractiveServer
+@inject CoffeeStoreApiClient StoreApi
+
+<PageTitle>@(_detail is null ? "Producer" : $"{_detail.Producer.Name} · Ninth Parallel")</PageTitle>
+
+@if (_detail is null)
+{
+    <section class="content-section empty-state"><h1>Producer not found</h1></section>
+}
+else
+{
+    <section class="producer-hero">
+        <img src="@_detail.Producer.ImageUrl" alt="@_detail.Producer.ImageAlt" />
+        <div class="producer-hero-copy">
+            <p class="eyebrow light">@_detail.Producer.Kind · @_detail.Producer.Country</p>
+            <h1>@_detail.Producer.Name</h1>
+            <p>@_detail.Producer.Region · @_detail.Producer.ElevationMasl m</p>
+        </div>
+    </section>
+    <section class="producer-story content-section narrow-copy">
+        <p class="eyebrow">Producer partner since @_detail.Producer.PartnerSince</p>
+        <h2>A relationship, not a supplier code</h2>
+        <p class="story-lead">@_detail.Producer.Story</p>
+    </section>
+    <section class="content-section">
+        <div class="section-heading"><h2>Current lots</h2></div>
+        <div class="coffee-grid">
+            @foreach (var coffee in _detail.Coffees)
+            {
+                <DeliveryControlCenter.Web.Components.Store.CoffeeCard Coffee="coffee" />
+            }
+        </div>
+    </section>
+}
+
+@code {
+    [Parameter]
+    public string Slug { get; set; } = string.Empty;
+
+    private ProducerDetailDto? _detail;
+
+    protected override async Task OnParametersSetAsync() => _detail = await StoreApi.GetProducerAsync(Slug);
+}

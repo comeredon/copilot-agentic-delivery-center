@@ -28,13 +28,16 @@ not a plan.
 
 | Requirement | Test | Layer |
 |---|---|---|
-| REQ-001 | `SynchronizeWorkItemsHandlerTests.NotModified_DoesNotTouchTheReadModel` | Application |
+| REQ-001 | `CoffeeCatalogEndpointsTests.Catalog_FilterByCountryAndMinimumScore_ReturnsOnlyMatchingCoffees` | Integration |
 
 A requirement with no test is either untestable (reword it) or unowned (assign it).
 
 ### 4. Name the risks
 What breaks that is not obviously related? Cache invalidation, migration ordering, determinism of
 the gate report, and the ledger chain are the recurring ones here.
+
+Before sequencing, compare the issue to `PLAN.md`. Persisted carts, checkout, payment, realtime
+stock, accounts, reviews, uploads, and AI guidance are backlog, not helpers that can be assumed.
 
 ### 5. Define the checkpoints
 Where you will stop and build. At minimum after `Domain` and after `Infrastructure`.

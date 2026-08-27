@@ -6,15 +6,21 @@ Engineering scripts and the agent hook implementations.
 
 | Path | Purpose |
 |---|---|
-| `agent-hooks/` | The hook scripts referenced by `.github/hooks/guardrails.json` — PowerShell and Bash, behaviourally identical |
+| `agent-hooks/` | PowerShell and Bash hook scripts referenced by `.github/hooks/guardrails.json`; parity is intended but not yet proven |
 | `tests/Test-Guardrails.ps1` | Fixture tests asserting each deny and allow decision |
 | `github/` | Repository provisioning helpers |
 
-## Agents may not edit `agent-hooks/`
+## Agents may not edit `agent-hooks/` or `tests/`
 
-These scripts implement the deny decisions that constrain agents. An agent that can edit its own
-constraints has no constraints. `.github/hooks/**` is in the deny list, and `eng/agent-hooks/` is
-owned by CODEOWNERS for the same reason.
+These scripts implement and test the deny decisions that constrain agents. An agent that can edit
+its own constraints or weaken their fixtures has no constraints. `eng/agent-hooks/` is explicitly
+owned by CODEOWNERS, and the repository-wide CODEOWNERS rule covers `eng/tests/`.
+
+The current pre-tool path patterns do not mechanically deny these two `eng/` paths. They remain
+off-limits by policy, and hardening that mechanical gap requires a human-authored guardrail change.
+The Bash pre-tool hook also allows when `jq` is unavailable, and either implementation can lose its
+deny patterns if policy loading fails. The PowerShell-only fixtures do not prove cross-platform
+parity. Treat all three as human-owned blockers, not as settled controls.
 
 If a hook is wrong — a false positive blocking legitimate work, or a gap letting something through
 — open an issue describing the exact payload and the observed decision. A human changes it.

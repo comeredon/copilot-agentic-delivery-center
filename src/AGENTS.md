@@ -1,6 +1,6 @@
 # AGENTS.md — src/
 
-Server and client application code. Dependencies point inward only, and
+Ninth Parallel server and client application code. Dependencies point inward only, and
 `tests/DeliveryControlCenter.ArchitectureTests` fails the build if they do not.
 
 ## Layers
@@ -39,8 +39,9 @@ neither can see.
 ## Non-negotiables
 
 - No secret in any `appsettings*.json`. User-secrets or environment only.
-- No new GitHub write path. `IGitHubReader` is read-only; `GuardedProjectWriter` is the single
-  audited exception and it is off by default.
+- Product code never calls GitHub. Projects, checks, PRs, and evidence belong to the harness.
 - Schema change means a committed migration. Never `EnsureCreated`.
 - A write that changes a cached projection invalidates the key explicitly. TTL expiry is not
   publication.
+- The current product has no checkout endpoint. When a checkout issue is delivered, never use
+  cached stock as authority; reserve against PostgreSQL with concurrency and idempotency.

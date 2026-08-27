@@ -17,7 +17,7 @@ possible, and no stake in the design being right.
 | Plan changes the determinism or guardrail model | `architecture-reviewer` **and** `threat-modeler` |
 | Implementation is complex or subtle | `architecture-reviewer` |
 | New test suite added | `test-engineer` (a different session than the one that wrote it) |
-| Anything touching authorisation or the ledger | `threat-modeler` |
+| Customer auth, checkout/payment, reviews/uploads, AI, or the ledger | `threat-modeler` |
 
 Skip it for a one-file change with no new behaviour. Ducking everything is how a critique stops
 being read.

@@ -1,0 +1,165 @@
+@page "/coffee/{Slug}"
+@rendermode InteractiveServer
+@inject CoffeeStoreApiClient StoreApi
+@inject StoreCart Cart
+
+<PageTitle>@(_coffee is null ? "Coffee" : $"{_coffee.Name} · Ninth Parallel")</PageTitle>
+
+@if (_coffee is null)
+{
+    <section class="content-section empty-state detail-empty">
+        <h1>Coffee not found</h1>
+        <p>This lot may have sold through or moved back into the archive.</p>
+        <a class="button button-primary" href="/shop">Return to the coffee list</a>
+    </section>
+}
+else
+{
+    <section class="product-hero">
+        <div class="product-gallery">
+            <img src="@Hero.Url" alt="@Hero.AltText" />
+        </div>
+        <div class="product-buy-panel">
+            <p class="eyebrow">@_coffee.Origin.Country · @_coffee.Origin.Region</p>
+            <h1>@_coffee.Name</h1>
+            <a class="producer-link" href="@($"/producer/{_coffee.Producer.Slug}")">@_coffee.Producer.Name</a>
+            <p class="product-intro">@_coffee.ShortDescription</p>
+            <div class="score-line">
+                <strong>@_coffee.Sensory.CupScore.ToString("0.0")</strong>
+                <span>SCA cup score</span>
+                <span class="freshness-pill">@_coffee.Roast.Freshness</span>
+            </div>
+            <div class="note-list product-notes">
+                @foreach (var note in _coffee.Sensory.TastingNotes)
+                {
+                    <span>@note</span>
+                }
+            </div>
+
+            <label for="variant-select">Bag and grind</label>
+            <select id="variant-select" class="field product-select" @bind="_selectedVariantId">
+                @foreach (var variant in AvailableVariants)
+                {
+                    <option value="@variant.Id">
+                        @variant.BagSizeGrams g · @FormatEnum(variant.Grind) · @FormatUsd(variant.PriceUsd)
+                    </option>
+                }
+            </select>
+            <button class="button button-primary add-button" disabled="@(SelectedVariant is null)" @onclick="AddToCart">
+                Add to bag
+            </button>
+            @if (_added)
+            {
+                <p class="added-message" role="status">Added. Your bag now has @Cart.ItemCount item(s).</p>
+            }
+            <p class="microcopy">Roasted on @_coffee.Roast.RoastedOn.ToString("MMM d") · free shipping over $55</p>
+        </div>
+    </section>
+
+    <section class="detail-story content-section narrow-copy">
+        <p class="eyebrow">The lot</p>
+        <h2>A coffee with coordinates</h2>
+        <p class="story-lead">@_coffee.Story</p>
+    </section>
+
+    <section class="coffee-data-band">
+        <div class="coffee-data-grid content-section">
+            <article>
+                <p class="data-label">Origin</p>
+                <h3>@_coffee.Origin.Subregion</h3>
+                <p>@_coffee.Origin.FarmName<br />@_coffee.Origin.ElevationMinMasl–@_coffee.Origin.ElevationMaxMasl m</p>
+            </article>
+            <article>
+                <p class="data-label">Varieties</p>
+                <h3>@string.Join(" · ", _coffee.Varieties)</h3>
+                <p>Selected for this lot and separated before processing.</p>
+            </article>
+            <article>
+                <p class="data-label">Process</p>
+                <h3>@FormatEnum(_coffee.Processing.Method)</h3>
+                <p>@_coffee.Processing.DryingMethod</p>
+            </article>
+            <article>
+                <p class="data-label">Roast</p>
+                <h3>@FormatEnum(_coffee.Roast.Level) · @FormatEnum(_coffee.Roast.Intent)</h3>
+                <p>@_coffee.Roast.RestDays-day recommended rest</p>
+            </article>
+        </div>
+    </section>
+
+    <section class="content-section brew-section">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">Brew this coffee</p>
+                <h2>Recipes from our lab</h2>
+            </div>
+        </div>
+        <div class="recipe-grid">
+            @foreach (var recipe in _coffee.BrewRecommendations)
+            {
+                <article class="recipe-card">
+                    <p class="recipe-method">@FormatEnum(recipe.Method)</p>
+                    <div class="recipe-numbers">
+                        <span><strong>@recipe.DoseGrams.ToString("0.#") g</strong> coffee</span>
+                        <span><strong>@recipe.YieldGrams.ToString("0.#") g</strong> yield</span>
+                        <span><strong>@recipe.WaterTemperatureC°C</strong> water</span>
+                        <span><strong>@FormatDuration(recipe.BrewSeconds)</strong> time</span>
+                    </div>
+                    <p>@recipe.GrindDescriptor</p>
+                    <p class="muted-copy">@recipe.Notes</p>
+                </article>
+            }
+        </div>
+    </section>
+
+    <section class="traceability-section content-section">
+        <div>
+            <p class="eyebrow">Traceability</p>
+            <h2>The details behind the price</h2>
+        </div>
+        <dl class="traceability-list">
+            <div><dt>Lot code</dt><dd>@_coffee.Traceability.LotCode</dd></div>
+            <div><dt>Import partner</dt><dd>@_coffee.Traceability.ImportPartner</dd></div>
+            <div><dt>FOB price</dt><dd>@(_coffee.Traceability.FobPriceUsdPerLb is { } fob ? FormatUsd(fob) : "Not published") / lb</dd></div>
+            <div><dt>Harvest</dt><dd>@_coffee.Processing.HarvestLabel</dd></div>
+            <div><dt>Certifications</dt><dd>@(_coffee.Certifications.Count == 0 ? "None claimed" : string.Join(", ", _coffee.Certifications))</dd></div>
+        </dl>
+    </section>
+}
+
+@code {
+    [Parameter]
+    public string Slug { get; set; } = string.Empty;
+
+    private CoffeeDetailDto? _coffee;
+    private Guid _selectedVariantId;
+    private bool _added;
+
+    private CoffeeImageDto Hero => _coffee!.Images.First(image => image.IsHero);
+    private IReadOnlyList<CoffeeVariantDto> AvailableVariants =>
+        _coffee?.Variants.Where(variant => variant.IsActive && variant.StockOnHand > 0).ToList() ?? [];
+    private CoffeeVariantDto? SelectedVariant => AvailableVariants.FirstOrDefault(variant => variant.Id == _selectedVariantId);
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _coffee = await StoreApi.GetCoffeeAsync(Slug);
+        _selectedVariantId = AvailableVariants.FirstOrDefault()?.Id ?? Guid.Empty;
+    }
+
+    private void AddToCart()
+    {
+        if (_coffee is null || SelectedVariant is null)
+        {
+            return;
+        }
+
+        _added = Cart.Add(_coffee, SelectedVariant);
+    }
+
+    private static string FormatEnum(string value) =>
+        System.Text.RegularExpressions.Regex.Replace(value, "([a-z])([A-Z])", "$1 $2");
+
+    private static string FormatUsd(decimal value) => $"${value:0.00}";
+
+    private static string FormatDuration(int seconds) => $"{seconds / 60}:{seconds % 60:00}";
+}

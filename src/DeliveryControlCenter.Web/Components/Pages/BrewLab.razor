@@ -1,0 +1,39 @@
+@page "/brew-lab"
+@rendermode InteractiveServer
+
+<PageTitle>Brew lab</PageTitle>
+
+<section class="brew-lab-hero content-section">
+    <div>
+        <p class="eyebrow">A ratio, not a commandment</p>
+        <h1>Brew lab</h1>
+        <p>Scale a reliable V60 recipe to the coffee dose you actually want to use.</p>
+    </div>
+    <div class="brew-calculator">
+        <label for="dose-input">Coffee dose</label>
+        <div class="dose-control">
+            <input id="dose-input" type="range" min="10" max="40" step="1" @bind="_dose" />
+            <output>@_dose g</output>
+        </div>
+        <div class="brew-output-grid">
+            <div><span>Water</span><strong>@WaterGrams g</strong></div>
+            <div><span>Bloom</span><strong>@BloomGrams g</strong></div>
+            <div><span>Target time</span><strong>@TargetTime</strong></div>
+            <div><span>Temperature</span><strong>94°C</strong></div>
+        </div>
+    </div>
+</section>
+
+<section class="brew-steps content-section">
+    <article><span>01</span><h2>Rinse and preheat</h2><p>Rinse the paper thoroughly and warm both brewer and server.</p></article>
+    <article><span>02</span><h2>Bloom</h2><p>Add @BloomGrams g of water, saturate all grounds, and wait 40 seconds.</p></article>
+    <article><span>03</span><h2>Build the brew</h2><p>Pour in steady concentric pulses, keeping the slurry level consistent.</p></article>
+    <article><span>04</span><h2>Read the result</h2><p>If it tastes sharp, grind finer. If it dries the finish, grind coarser.</p></article>
+</section>
+
+@code {
+    private int _dose = 15;
+    private int WaterGrams => (int)Math.Round(_dose * 16.67m, MidpointRounding.AwayFromZero);
+    private int BloomGrams => _dose * 3;
+    private string TargetTime => _dose <= 20 ? "2:45–3:15" : "3:15–3:45";
+}

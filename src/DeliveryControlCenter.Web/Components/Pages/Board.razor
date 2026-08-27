@@ -1,86 +1,143 @@
-@page "/board"
+@page "/shop"
 @rendermode InteractiveServer
-@inject DeliveryApiClient Api
-@inject DeliveryRealtimeClient Realtime
-@implements IAsyncDisposable
+@inject CoffeeStoreApiClient StoreApi
 
-<PageTitle>Board</PageTitle>
+<PageTitle>Shop coffee</PageTitle>
 
-<h1>Delivery board</h1>
+<section class="shop-header content-section">
+    <p class="eyebrow">Roasted weekly</p>
+    <h1>Shop coffee</h1>
+    <p>Filter by where a coffee grew, how it was processed, or what you want to taste.</p>
+</section>
 
-<div class="filter-bar">
-    <input class="filter-input" placeholder="Filter by title or number" @bind="_filter" @bind:event="oninput" />
-    <select class="filter-input" @bind="_stageFilter">
-        <option value="">All stages</option>
-        @foreach (var stage in _stages)
+<section class="catalog-layout content-section">
+    <aside class="catalog-filters" aria-label="Coffee filters">
+        <div class="filter-heading">
+            <h2>Filter</h2>
+            <button class="text-button" @onclick="ClearAsync">Clear</button>
+        </div>
+        <label for="catalog-search">Search</label>
+        <input id="catalog-search" class="field" placeholder="Coffee, country, tasting note" @bind="_search" />
+
+        <label for="country-filter">Origin</label>
+        <select id="country-filter" class="field" @bind="_country">
+            <option value="">All origins</option>
+            @foreach (var value in _catalog?.Facets.Countries ?? [])
+            {
+                <option value="@value.Value">@value.Value (@value.Count)</option>
+            }
+        </select>
+
+        <label for="process-filter">Process</label>
+        <select id="process-filter" class="field" @bind="_process">
+            <option value="">All processes</option>
+            @foreach (var value in _catalog?.Facets.Processes ?? [])
+            {
+                <option value="@value.Value">@FormatEnum(value.Value) (@value.Count)</option>
+            }
+        </select>
+
+        <label for="roast-filter">Roast</label>
+        <select id="roast-filter" class="field" @bind="_roastLevel">
+            <option value="">All roast levels</option>
+            @foreach (var value in _catalog?.Facets.RoastLevels ?? [])
+            {
+                <option value="@value.Value">@FormatEnum(value.Value) (@value.Count)</option>
+            }
+        </select>
+
+        <label for="note-filter">Tastes like</label>
+        <select id="note-filter" class="field" @bind="_tastingNote">
+            <option value="">Every tasting note</option>
+            @foreach (var value in _catalog?.Facets.TastingNotes ?? [])
+            {
+                <option value="@value.Value">@value.Value (@value.Count)</option>
+            }
+        </select>
+
+        <button class="button button-primary filter-submit" @onclick="LoadAsync">Apply filters</button>
+    </aside>
+
+    <div class="catalog-results">
+        <div class="catalog-toolbar">
+            <p><strong>@(_catalog?.Total ?? 0)</strong> coffees</p>
+            <label class="sort-control" for="sort-order">
+                Sort
+                <select id="sort-order" class="field compact-field" @bind="_sort" @bind:after="LoadAsync">
+                    <option value="featured">Featured</option>
+                    <option value="score">Cup score</option>
+                    <option value="newest">Freshest roast</option>
+                    <option value="price-asc">Price: low to high</option>
+                    <option value="price-desc">Price: high to low</option>
+                </select>
+            </label>
+        </div>
+
+        @if (_loading)
         {
-            <option value="@stage">@stage</option>
+            <div class="loading-state">Building your coffee list…</div>
         }
-    </select>
-</div>
-
-@if (_items.Count == 0)
-{
-    <p class="muted">No work items yet.</p>
-}
-else
-{
-    <table class="data-table">
-        <thead>
-        <tr><th>#</th><th>Kind</th><th>Title</th><th>State</th><th>Stage</th><th>Risk</th><th>Updated</th></tr>
-        </thead>
-        <tbody>
-        @foreach (var item in Filtered)
+        else if (_catalog is null || _catalog.Items.Count == 0)
         {
-            <tr>
-                <td><a href="@($"work-items/{item.Id}")">@item.Number</a></td>
-                <td>@item.Kind</td>
-                <td>@item.Title</td>
-                <td>@item.State</td>
-                <td><span class="stage-chip stage-@item.Stage.ToLowerInvariant()">@item.Stage</span></td>
-                <td>@item.Risk</td>
-                <td>@item.UpdatedAtUtc.ToString("u")</td>
-            </tr>
+            <div class="empty-state">
+                <h2>No coffees match that combination</h2>
+                <p>Try removing one filter or search by a broader flavor such as chocolate or citrus.</p>
+            </div>
         }
-        </tbody>
-    </table>
-}
+        else
+        {
+            <div class="coffee-grid catalog-grid">
+                @foreach (var coffee in _catalog.Items)
+                {
+                    <DeliveryControlCenter.Web.Components.Store.CoffeeCard Coffee="coffee" />
+                }
+            </div>
+        }
+    </div>
+</section>
 
 @code {
-    private IReadOnlyList<WorkItemSummaryDto> _items = [];
-    private string _filter = string.Empty;
-    private string _stageFilter = string.Empty;
-    private string[] _stages = [];
+    private CatalogPageDto? _catalog;
+    private string _search = string.Empty;
+    private string _country = string.Empty;
+    private string _process = string.Empty;
+    private string _roastLevel = string.Empty;
+    private string _tastingNote = string.Empty;
+    private string _sort = "featured";
+    private bool _loading;
 
-    private IEnumerable<WorkItemSummaryDto> Filtered =>
-        _items.Where(i =>
-            (string.IsNullOrWhiteSpace(_stageFilter) || i.Stage == _stageFilter) &&
-            (string.IsNullOrWhiteSpace(_filter) ||
-             i.Title.Contains(_filter, StringComparison.OrdinalIgnoreCase) ||
-             i.Number.ToString().Contains(_filter, StringComparison.Ordinal)));
-
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadAsync();
-        Realtime.Changed += OnChangedAsync;
-        await Realtime.EnsureConnectedAsync();
-    }
+    protected override Task OnInitializedAsync() => LoadAsync();
 
     private async Task LoadAsync()
     {
-        _items = await Api.GetWorkItemsAsync();
-        _stages = [.. _items.Select(i => i.Stage).Distinct().Order()];
+        _loading = true;
+        try
+        {
+            _catalog = await StoreApi.SearchAsync(
+                _search,
+                _country,
+                _process,
+                _roastLevel,
+                _tastingNote,
+                sort: _sort);
+        }
+        finally
+        {
+            _loading = false;
+        }
     }
 
-    private async Task OnChangedAsync(DeliveryNotification notification)
+    private async Task ClearAsync()
     {
+        _search = string.Empty;
+        _country = string.Empty;
+        _process = string.Empty;
+        _roastLevel = string.Empty;
+        _tastingNote = string.Empty;
+        _sort = "featured";
         await LoadAsync();
-        await InvokeAsync(StateHasChanged);
     }
 
-    public ValueTask DisposeAsync()
-    {
-        Realtime.Changed -= OnChangedAsync;
-        return ValueTask.CompletedTask;
-    }
+    private static string FormatEnum(string value) =>
+        System.Text.RegularExpressions.Regex.Replace(value, "([a-z])([A-Z])", "$1 $2");
 }

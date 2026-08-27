@@ -6,10 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="../DeliveryControlCenter.Contracts/DeliveryControlCenter.Contracts.csproj" />
     <ProjectReference Include="../DeliveryControlCenter.ServiceDefaults/DeliveryControlCenter.ServiceDefaults.csproj" />
   </ItemGroup>

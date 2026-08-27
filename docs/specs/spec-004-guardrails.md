@@ -1,5 +1,16 @@
 # SPEC-004 — Agent guardrails
 
+## Current status
+
+The hook decision function and its 20 PowerShell fixtures are implemented. Mechanical path denial
+covers tested repository-relative forms of `.github/hooks/**`, `.github/workflows/**`, `.mcp.json`,
+and `CODEOWNERS`; absolute-path canonicalization remains open. The hook implementations under
+`eng/agent-hooks/**` and their fixtures under `eng/tests/**` are human-owned but are not yet in the
+pre-tool deny patterns or protected-path workflow regex. CODEOWNERS review is therefore essential
+until a human hardens those paths. Bash parity and fail-closed behavior without `jq` also remain
+open. Agents with `execute` can write tracked files through shell commands, active customizations
+are not deny-listed, and the "Protected paths untouched" workflow currently warns without failing.
+
 ## Problem
 
 Instructions tell an agent what not to do. That is necessary and insufficient: a misaligned,
@@ -27,7 +38,7 @@ agent's cooperation, plus a record of every time one of them bit.
 
 - Being the authoritative control. Hooks run inside the agent's own environment. Branch protection,
   required status checks, least-privilege tokens, and the human merge signal are authoritative;
-  hooks are a strong deterrent and a complete audit trail.
+  hooks are a deterrent and best-effort local audit trail.
 - Sandboxing the process. Hooks intercept tool calls, not syscalls.
 - Preventing a determined human. `CODEOWNERS` and branch protection cover that.
 
@@ -45,6 +56,10 @@ implementations cannot drift on *what* is denied even if they differ in *how*.
 `pre-tool-use` denies on an unparseable payload. If we cannot tell what is being attempted, we do
 not approve it. That choice costs an occasional false denial and prevents a whole class of evasion
 by malformed input.
+
+That statement currently holds for the PowerShell fixture environment with a readable policy. Bash
+allows when `jq` is absent, and both implementations can lose deny patterns when policy loading
+fails. Fail-closed behavior across those cases remains required work.
 
 ### The audit trail records shape, not content
 
@@ -64,7 +79,7 @@ blocked agent, because a hook that can fail a session is a hook people will want
 
 PowerShell for Windows, Bash for Linux and macOS. They read the same policy file and produce the
 same decision, because the platform an agent happens to run on must not change what it is allowed
-to do.
+to do. This is the target design; current verification exercises PowerShell only.
 
 ## Verification
 
@@ -100,3 +115,10 @@ pwsh -NoProfile -File eng/tests/Test-Guardrails.ps1
   the pattern checks have nothing to match and the decision defaults to allow. `jq` is present on
   GitHub-hosted runners; a self-hosted runner without it would silently weaken the guardrails.
   Recorded rather than hidden — a preflight check for `jq` is the obvious fix.
+- Add `eng/agent-hooks/**` and `eng/tests/**` to both the local deny policy and protected-path CI
+  detection. The instruction layer forbids those edits now, but instruction compliance is not a
+  mechanical control.
+- Deny shell-based writes from read-only roles and delivery-time edits to customization contracts.
+  Today, removing `edit` does not make an agent read-only when it still has `execute`.
+- Make the protected-path workflow exit non-zero on a match. Its current step name says "Fail" but
+  the implementation emits warnings and leaves the job green.

@@ -26,8 +26,9 @@ internal sealed class MigrationWorker(
 
             var strategy = db.Database.CreateExecutionStrategy();
             await strategy.ExecuteAsync(async () => await db.Database.MigrateAsync(stoppingToken));
+            await StoreDataSeeder.SeedAsync(db, stoppingToken);
 
-            logger.LogInformation("Database migration completed.");
+            logger.LogInformation("Database migration and deterministic store seeding completed.");
         }
         catch (Exception ex)
         {

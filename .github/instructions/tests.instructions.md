@@ -26,11 +26,15 @@ being protected, for example `Append_RefusesSelfVerification`.
 
 Assert on behaviour and invariants, not on implementation detail. Good targets in this repository:
 
-- Domain invariants (a work item cannot be authorised before the gate passed).
+- Coffee invariants (cup score, publish readiness, recipe bounds, stock never negative).
+- Catalog behavior (search escaping, filters, facets, sorting, paging, stable slugs).
+- Current Web state (`StoreCart` quantities, stock cap, removal, subtotal).
 - Determinism (identical input produces an identical canonical hash).
-- Idempotency (a second sync with unchanged content changes nothing and invalidates nothing).
 - Layering (the architecture tests).
-- Guardrails (a non-owner authorisation attempt is refused *and* audited).
+- Caching (equivalent filters create stable keys; Redis failure degrades).
+
+Checkout idempotency, order price snapshots, concurrent reservation, and write invalidation become
+required targets only when the scoped issue introduces those behaviors.
 
 ## What not to do
 
@@ -38,4 +42,5 @@ Assert on behaviour and invariants, not on implementation detail. Good targets i
   the code. If the test is wrong, say so explicitly and explain why.
 - Do not add `[Fact(Skip = ...)]` to get a green run. A skipped test is a failing test with extra
   steps.
-- Do not mock what you own the port for — use the fakes in `tests/DeliveryControlCenter.UnitTests/Fakes`.
+- Search for an existing fixture or helper before adding one. There is no baseline shared `Fakes`
+  directory; add only the smallest test double required by the issue.

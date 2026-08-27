@@ -1,0 +1,30 @@
+<article class="coffee-card">
+    <a class="coffee-card-image" href="@($"/coffee/{Coffee.Slug}")" aria-label="View @Coffee.Name">
+        <img src="@Coffee.HeroImageUrl" alt="@Coffee.HeroImageAlt" loading="lazy" />
+        <span class="score-badge">@Coffee.CupScore.ToString("0.0")</span>
+    </a>
+    <div class="coffee-card-body">
+        <p class="coffee-origin">@Coffee.Country · @Coffee.Region</p>
+        <h3><a href="@($"/coffee/{Coffee.Slug}")">@Coffee.Name</a></h3>
+        <p class="coffee-producer">@Coffee.Producer</p>
+        <div class="note-list" aria-label="Tasting notes">
+            @foreach (var note in Coffee.TastingNotes)
+            {
+                <span>@note</span>
+            }
+        </div>
+        <div class="coffee-card-footer">
+            <span>From <strong>@FormatUsd(Coffee.FromPriceUsd)</strong></span>
+            <span class="stock-state @(Coffee.InStock ? "in-stock" : "sold-out")">
+                @(Coffee.InStock ? "In roast" : "Sold out")
+            </span>
+        </div>
+    </div>
+</article>
+
+@code {
+    [Parameter, EditorRequired]
+    public CoffeeCardDto Coffee { get; set; } = default!;
+
+    private static string FormatUsd(decimal value) => $"${value:0.00}";
+}

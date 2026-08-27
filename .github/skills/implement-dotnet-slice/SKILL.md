@@ -13,9 +13,8 @@ the architecture tests do.
 ### 1. Domain
 Entities and invariants. No framework types, no `async`, no I/O.
 
-Invariants belong here, not in a handler. `AuthorizeByHuman` throwing when the gate has not passed
-is the model refusing an illegal state — a check in the API would be a policy that any other
-caller could forget.
+Invariants belong here, not in a handler. `Coffee.ReserveVariant` refusing overselling is the model
+rejecting an illegal state; an endpoint-only stock check is a policy another caller could forget.
 
 ```
 dotnet build src/DeliveryControlCenter.Domain/DeliveryControlCenter.Domain.csproj
@@ -25,8 +24,8 @@ dotnet build src/DeliveryControlCenter.Domain/DeliveryControlCenter.Domain.cspro
 Only if the wire shape changed. `record` types, no behaviour.
 
 ### 3. Application
-The use case, and the port it needs. Ports go in `Abstractions`, expressed in the domain's
-language — `IGitHubReader.FetchIssuesAsync`, not `IHttpClientWrapper.GetAsync`.
+The use case, and the port it needs. Ports go in `Abstractions`, expressed in the product's
+language — `ICoffeeCatalogRepository.SearchAsync`, not `IDbContextWrapper.QueryAsync`.
 
 If you find yourself wanting `DbContext` here, you want a port instead.
 
@@ -45,8 +44,10 @@ Generating the migration also validates the whole EF model — if it succeeds, t
 coherent. Treat a migration failure as a modelling bug, not a tooling problem.
 
 ### 5. Api / Worker
-Wire it into DI and expose it. Endpoints go in `Endpoints/`, one group per concern. A state-changing
-endpoint gets the `write` rate-limit policy and an audit event on both the allowed and refused path.
+Wire it into DI and expose it. Endpoints go in `Endpoints/`, one group per concern. The baseline
+catalog endpoints are read-only. If an issue adds a write, its plan must name validation,
+authorization, rate limiting, idempotency, transaction behavior, and cache invalidation; do not
+assume a deleted generic audit path exists.
 
 ### 6. Full build and tests
 
@@ -56,12 +57,15 @@ dotnet test tests/DeliveryControlCenter.UnitTests
 dotnet test tests/DeliveryControlCenter.ArchitectureTests
 ```
 
+Run `dotnet test tests/DeliveryControlCenter.IntegrationTests` when PostgreSQL, Redis, migrations,
+or HTTP behavior changed and a container runtime is available.
+
 ## Recurring traps in this repository
 
 - **Cache invalidation.** Any write that changes a cached projection must invalidate the key
   explicitly. TTL expiry is not publication.
-- **Idempotency.** A sync that finds unchanged content must change nothing and invalidate nothing.
-  Return `false` from the mutator rather than touching the entity unconditionally.
+- **Idempotency.** Retryable checkout, payment, Worker, or Project operations must not duplicate
+  stock reservations, effects, cache churn, or evidence.
 - **Determinism.** Nothing time-, duration-, machine-, or enumeration-order-dependent may reach the
   canonical section of the gate report.
 - **Analyzer promotion.** A new warning is a build break. Fix it properly; add to `NoWarn` only when

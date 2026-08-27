@@ -1,4 +1,4 @@
-using DeliveryControlCenter.Application.Delivery;
+using DeliveryControlCenter.Application.Catalog;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DeliveryControlCenter.Application;
@@ -6,12 +6,9 @@ namespace DeliveryControlCenter.Application;
 public static class ApplicationServiceCollectionExtensions
 {
     /// <summary>Registers use cases only. Ports are bound by the Infrastructure layer.</summary>
-    public static IServiceCollection AddDeliveryApplication(this IServiceCollection services)
+    public static IServiceCollection AddStoreApplication(this IServiceCollection services)
     {
-        services.AddScoped<DeliveryQueries>();
-        services.AddScoped<SynchronizeWorkItemsHandler>();
-        services.AddScoped<RecordGateOutcomeHandler>();
-        services.AddScoped<AuthorizeWorkItemHandler>();
+        services.AddScoped<CatalogQueries>();
         return services;
     }
 }

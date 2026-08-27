@@ -21,6 +21,7 @@ internal sealed class GateRunner(GateOptions options)
             await RunAsync("format", true, "dotnet", "format --verify-no-changes --verbosity quiet", cancellationToken),
             await RunAsync("build", true, "dotnet", "build --no-restore -warnaserror", cancellationToken),
             await RunAsync("unit-tests", true, "dotnet", "test tests/DeliveryControlCenter.UnitTests --no-build", cancellationToken),
+            await RunAsync("web-tests", true, "dotnet", "test tests/DeliveryControlCenter.Web.Tests --no-build", cancellationToken),
             await RunAsync("architecture-tests", true, "dotnet", "test tests/DeliveryControlCenter.ArchitectureTests --no-build", cancellationToken),
             await RunAsync("gate-tests", true, "dotnet", "test tests/DeliveryControlCenter.QualityGate.Tests --no-build", cancellationToken),
         };

@@ -1,13 +1,14 @@
 ---
 name: record-gate-ledger
-description: Append a hash-chained ledger entry capturing a proposer's and an independent verifier's verdict on a gate. Use after every quality gate run that is going to inform a merge decision. Do NOT use to record a single agent's opinion — an entry requires two distinct agents.
+description: Prove or publish a hash-chained gate record with distinct proposer and verifier verdicts. Use after a gate informs a merge decision. The baseline supports local domain proof; durable append requires a separately configured connected sink.
 ---
 
 # Record a gate ledger entry
 
-The ledger is what makes "agents verified each other" checkable rather than claimed. Each entry
-binds a gate outcome to two named agents and chains to the entry before it, so an entry cannot be
-inserted, reordered, or quietly rewritten later.
+The ledger model makes "agents verified each other" checkable rather than claimed. Each entry binds
+a gate outcome to two named agents and the prior hash. The baseline contains `GateLedgerEntry`, its
+tests, and `schemas/gate-ledger.schema.json`; it does **not** contain a repository, table, publisher,
+or trusted GitHub ingestion path.
 
 ## The entry
 
@@ -26,16 +27,33 @@ inserted, reordered, or quietly rewritten later.
 
 Schema: `schemas/gate-ledger.schema.json`. Domain type: `GateLedgerEntry`.
 
-## Procedure
+## Choose the mode first
 
-1. Read the current tip with `FindTipAsync`. Its `EntryHash` becomes your `previousEntryHash`. The
-   first entry uses `GateLedgerEntry.GenesisHash`.
-2. `sequence` is tip + 1. Sequences are unique and contiguous — a gap means an entry was lost.
-3. `evidenceHash` is the gate report's `canonicalHash`. Do not invent a hash and do not reuse one
-   from a different run; the whole point is that the entry points at a specific verdict.
-4. Call `GateLedgerEntry.Append`. It computes `entryHash` over the whole payload including the
-   previous hash.
-5. Persist it. Verify with `VerifyIntegrity()` before you report success.
+### Local proof
+
+Use this in the baseline or disconnected mode:
+
+1. Run `dotnet test tests/DeliveryControlCenter.UnitTests --filter FullyQualifiedName~GateLedgerEntryTests`.
+2. Report that self-verification refusal, chaining, disagreement, and deterministic hash behavior
+   passed or failed.
+3. Do **not** create a made-up sequence/tip and do not claim a ledger entry was recorded. This mode
+   proves the invariant only.
+
+### Connected publication
+
+Use only when `preflight-github-delivery` reports `ledger=append` for a trusted sink and publisher
+capable of reading the current tip, appending, and reading back:
+
+1. Read the current tip from that sink. Its `entryHash` becomes `previousEntryHash`; the first entry
+   uses `GateLedgerEntry.GenesisHash`.
+2. Set `sequence` to tip + 1. Gaps or duplicates are blocking findings.
+3. Take `evidenceHash` from the exact gate report's `canonicalHash`; never invent or reuse it.
+4. Construct the record with the actual proposer and verifier verdicts. They must be distinct.
+5. Validate against `schemas/gate-ledger.schema.json`, append once, read it back, and verify the
+   chain before reporting `published`.
+
+No such sink or publisher ships in the current repository. If one is absent, connected publication
+is blocked; fall back to local proof and report the missing capability.
 
 ## The rule the code enforces
 
@@ -47,14 +65,14 @@ not rename the agent to satisfy the check.
 
 ## Disagreement
 
-If proposer and verifier disagree, `agreed` is `false`. **Still record the entry.** A recorded
-disagreement is the most valuable thing in the ledger: it is proof that the two agents were
-genuinely independent. Then escalate to a human — a disagreement is not something to resolve by
-asking a third agent to break the tie.
+If proposer and verifier disagree, `agreed` is `false`. In connected mode, still append the
+disagreement. In local mode, report both actual verdicts without fabricating an entry. Then
+escalate to a human; do not ask a third agent to erase the signal.
 
 ## Never
 
 - Never rewrite an existing entry. The chain is append-only; a rewrite invalidates every entry
   after it, which is exactly the property you want.
 - Never fabricate a verifier verdict on behalf of another agent.
-- Never skip the entry because the gate passed. A pass with no ledger entry is unverified.
+- In connected mode, never skip the entry because the gate passed. In local mode, say explicitly
+   that the pass has independent verdicts but no durably published ledger entry.

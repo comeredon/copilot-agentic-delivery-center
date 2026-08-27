@@ -1,17 +1,11 @@
 using DeliveryControlCenter.Api.Endpoints;
-using DeliveryControlCenter.Api.Realtime;
-using DeliveryControlCenter.Application.Abstractions;
-using DeliveryControlCenter.Contracts.Realtime;
 using DeliveryControlCenter.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
-builder.AddDeliveryInfrastructure();
+builder.AddStoreInfrastructure();
 
-// The API owns the realtime transport, so it replaces the no-op notifier.
-builder.Services.AddSingleton<IDeliveryNotifier, SignalRDeliveryNotifier>();
-builder.Services.AddSignalR();
 builder.Services.AddProblemDetails();
 builder.Services.AddDeliveryRateLimiting();
 builder.Services.AddOpenApi();
@@ -29,13 +23,11 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseHsts();
+    app.UseHttpsRedirection();
 }
 
-app.UseHttpsRedirection();
-
 app.MapDefaultEndpoints();
-app.MapDeliveryEndpoints();
-app.MapHub<DeliveryHub>(DeliveryHubContract.Path);
+app.MapCatalogEndpoints();
 
 await app.RunAsync();
 

@@ -7,7 +7,7 @@ applyTo: "src/DeliveryControlCenter.Web/**"
 
 ## Data access
 
-The Web project reaches data **only** through `DeliveryApiClient`. It has no reference to
+The Web project reaches product data **only** through `CoffeeStoreApiClient`. It has no reference to
 `Application` or `Infrastructure`, and the architecture tests enforce that. If you find yourself
 wanting a database call from a component, add an API endpoint instead.
 
@@ -16,9 +16,11 @@ wanting a database call from a component, add an API endpoint instead.
 - Interactive pages declare `@rendermode InteractiveServer` explicitly.
 - Fetch in `OnInitializedAsync` (or `OnParametersSetAsync` when the route parameter drives the
   fetch). Never fetch inside the render body.
-- Realtime pushes are **hints only**. On a notification, refetch through the API; never render
-  state that arrived over the hub, because that would bypass the audited read path.
-- Unsubscribe from `DeliveryRealtimeClient.Changed` in `DisposeAsync`. A leaked handler keeps a
+- `StoreCart` is scoped in-memory state in the baseline. Do not imply that it survives refresh,
+  reserves stock, or performs checkout.
+- There is no realtime client today. If a scoped issue adds notifications, treat them as hints and
+  refetch through `CoffeeStoreApiClient` before rendering authoritative product state.
+- Unsubscribe from shared event sources in `DisposeAsync`. A leaked handler keeps a
   disposed circuit alive.
 - Call `InvokeAsync(StateHasChanged)` when updating from a non-UI thread (any hub callback).
 
@@ -35,9 +37,11 @@ wanting a database call from a component, add an API endpoint instead.
 - Form controls have associated labels or a `placeholder` that is genuinely descriptive.
 - Do not convey status by colour alone — pair colour with text ("pass"/"fail", not just green/red).
 - External links carry `rel="noopener noreferrer"`.
+- UI changes are not complete until desktop (1440 × 1000) and mobile (390 × 844) browser checks
+  show no horizontal overflow, clipped controls, failed resources, or console errors.
 
 ## Security
 
-- Never render raw HTML from remote content. Blazor escapes by default; do not reach for
-  `MarkupString` on anything that came from GitHub.
+- Never render raw HTML from catalog, producer, or review content. Blazor escapes by default; do
+  not reach for `MarkupString` on product data.
 - Do not put identifiers or hashes in the page title or the URL beyond what routing needs.

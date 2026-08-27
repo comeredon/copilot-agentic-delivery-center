@@ -1,7 +1,8 @@
 using System.Reflection;
-using DeliveryControlCenter.Application.Abstractions;
-using DeliveryControlCenter.Domain.Common;
+using DeliveryControlCenter.Application.Catalog;
+using DeliveryControlCenter.Domain.Catalog;
 using DeliveryControlCenter.Infrastructure.Persistence;
+using DeliveryControlCenter.Web.Services;
 using NetArchTest.Rules;
 
 namespace DeliveryControlCenter.ArchitectureTests;
@@ -12,8 +13,8 @@ namespace DeliveryControlCenter.ArchitectureTests;
 /// </summary>
 public sealed class LayeringTests
 {
-    private static readonly Assembly Domain = typeof(Entity).Assembly;
-    private static readonly Assembly Application = typeof(IWorkItemRepository).Assembly;
+    private static readonly Assembly Domain = typeof(Coffee).Assembly;
+    private static readonly Assembly Application = typeof(CatalogQueries).Assembly;
     private static readonly Assembly Infrastructure = typeof(DeliveryDbContext).Assembly;
 
     [Fact]
@@ -88,13 +89,47 @@ public sealed class LayeringTests
     public void Web_NeverReachesTheDatabaseOrGitHubDirectly()
     {
         // The front end must go through the API so every read stays audited and rate limited.
-        var result = Types.InAssembly(typeof(Web.Services.DeliveryApiClient).Assembly)
+        var result = Types.InAssembly(typeof(CoffeeStoreApiClient).Assembly)
             .ShouldNot()
             .HaveDependencyOnAny(
                 "DeliveryControlCenter.Infrastructure",
                 "DeliveryControlCenter.Application",
                 "Microsoft.EntityFrameworkCore",
-                "Npgsql")
+                "Npgsql",
+                "Octokit",
+                "DeliveryControlCenter.Infrastructure.GitHub")
+            .GetResult();
+
+        result.FailingTypeNames.ShouldBeNull();
+    }
+
+    [Fact]
+    public void CoffeeDomain_DoesNotDependOnDeliveryHarnessNamespaces()
+    {
+        var result = Types.InAssembly(Domain)
+            .That()
+            .ResideInNamespace("DeliveryControlCenter.Domain.Catalog")
+            .ShouldNot()
+            .HaveDependencyOnAny(
+                "DeliveryControlCenter.Domain.Delivery",
+                "DeliveryControlCenter.Domain.Gates",
+                "DeliveryControlCenter.Domain.Evidence",
+                "DeliveryControlCenter.Domain.Sync")
+            .GetResult();
+
+        result.FailingTypeNames.ShouldBeNull();
+    }
+
+    [Fact]
+    public void CatalogApplication_DoesNotDependOnDeliveryHarnessNamespaces()
+    {
+        var result = Types.InAssembly(Application)
+            .That()
+            .ResideInNamespace("DeliveryControlCenter.Application.Catalog")
+            .ShouldNot()
+            .HaveDependencyOnAny(
+                "DeliveryControlCenter.Application.Delivery",
+                "DeliveryControlCenter.Infrastructure.GitHub")
             .GetResult();
 
         result.FailingTypeNames.ShouldBeNull();

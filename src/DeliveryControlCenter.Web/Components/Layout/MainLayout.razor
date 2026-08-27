@@ -1,19 +1,31 @@
 @inherits LayoutComponentBase
 
-<div class="app-shell">
-    <header class="app-header">
-        <div class="brand">
-            <span class="brand-mark">DCC</span>
-            <span class="brand-name">Delivery Control Center</span>
-        </div>
+<div class="site-shell">
+    <header class="site-header">
+        <a class="brand" href="/" aria-label="Ninth Parallel Coffee Roasters home">
+            <span class="brand-mark">9°</span>
+            <span class="brand-copy">
+                <span class="brand-name">Ninth Parallel</span>
+                <span class="brand-subtitle">Coffee Roasters</span>
+            </span>
+        </a>
         <NavMenu />
     </header>
 
-    <main class="app-main">
+    <main class="site-main">
         @Body
     </main>
 
-    <footer class="app-footer">
-        <span>Autonomous agent delivery &mdash; every merge still needs a human.</span>
+    <footer class="site-footer">
+        <div>
+            <strong>Ninth Parallel Coffee Roasters</strong>
+            <p>Small lots, transparent sourcing, useful brew information.</p>
+        </div>
+        <div class="footer-links">
+            <a href="/shop">Shop coffee</a>
+            <a href="/brew-lab">Brew lab</a>
+            <a href="/transparency">Transparency</a>
+        </div>
+        <p class="footer-note">Roasted in small batches. Seeded demo data; no orders are charged.</p>
     </footer>
 </div>

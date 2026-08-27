@@ -1,27 +1,19 @@
-using DeliveryControlCenter.Domain.Audit;
-using DeliveryControlCenter.Domain.Delivery;
-using DeliveryControlCenter.Domain.Evidence;
-using DeliveryControlCenter.Domain.Gates;
-using DeliveryControlCenter.Domain.Sync;
+using DeliveryControlCenter.Domain.Catalog;
 using Microsoft.EntityFrameworkCore;
 
 namespace DeliveryControlCenter.Infrastructure.Persistence;
 
 public sealed class DeliveryDbContext(DbContextOptions<DeliveryDbContext> options) : DbContext(options)
 {
-    public DbSet<WorkItem> WorkItems => Set<WorkItem>();
+    public DbSet<Coffee> Coffees => Set<Coffee>();
 
-    public DbSet<GateReport> GateReports => Set<GateReport>();
+    public DbSet<CoffeeDescriptor> CoffeeDescriptors => Set<CoffeeDescriptor>();
 
-    public DbSet<GateLedgerEntry> GateLedgerEntries => Set<GateLedgerEntry>();
+    public DbSet<BrewRecommendation> BrewRecommendations => Set<BrewRecommendation>();
 
-    public DbSet<AgentEvidence> Evidence => Set<AgentEvidence>();
+    public DbSet<CoffeeImage> CoffeeImages => Set<CoffeeImage>();
 
-    public DbSet<SyncCursor> SyncCursors => Set<SyncCursor>();
-
-    public DbSet<RepositoryConnection> RepositoryConnections => Set<RepositoryConnection>();
-
-    public DbSet<AuditEvent> AuditEvents => Set<AuditEvent>();
+    public DbSet<Producer> Producers => Set<Producer>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

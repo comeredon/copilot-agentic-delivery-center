@@ -4,8 +4,8 @@ using DeliveryControlCenter.Worker;
 var builder = Host.CreateApplicationBuilder(args);
 
 builder.AddServiceDefaults();
-builder.AddDeliveryInfrastructure();
-builder.Services.AddHostedService<SyncWorker>();
+builder.AddStoreInfrastructure();
+builder.Services.AddHostedService<CoffeeOperationsWorker>();
 
 var host = builder.Build();
 await host.RunAsync();

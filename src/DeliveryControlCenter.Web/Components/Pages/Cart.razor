@@ -1,0 +1,68 @@
+@page "/cart"
+@rendermode InteractiveServer
+@inject StoreCart ShoppingCart
+
+<PageTitle>Your bag</PageTitle>
+
+<section class="cart-page content-section">
+    <p class="eyebrow">Your order</p>
+    <h1>Shopping bag</h1>
+
+    @if (ShoppingCart.Lines.Count == 0)
+    {
+        <div class="empty-state cart-empty">
+            <h2>Your bag is empty</h2>
+            <p>Start with a flavor you recognize, then follow the origin and process details.</p>
+            <a class="button button-primary" href="/shop">Browse coffee</a>
+        </div>
+    }
+    else
+    {
+        <div class="cart-layout">
+            <div class="cart-lines">
+                @foreach (var line in ShoppingCart.Lines)
+                {
+                    <article class="cart-line">
+                        <img src="@line.ImageUrl" alt="@line.ImageAlt" />
+                        <div class="cart-line-copy">
+                            <p class="coffee-origin">@line.Producer</p>
+                            <h2><a href="@($"/coffee/{line.Slug}")">@line.CoffeeName</a></h2>
+                            <p>@line.BagSizeGrams g · @FormatEnum(line.Grind)</p>
+                            <div class="quantity-control">
+                                <button aria-label="Decrease quantity" @onclick="() => Change(line, -1)">−</button>
+                                <span>@line.Quantity</span>
+                                <button aria-label="Increase quantity" @onclick="() => Change(line, 1)">+</button>
+                            </div>
+                        </div>
+                        <div class="cart-line-price">
+                            <strong>@FormatUsd(line.LineTotal)</strong>
+                            <button class="text-button" @onclick="() => ShoppingCart.Remove(line.VariantId)">Remove</button>
+                        </div>
+                    </article>
+                }
+            </div>
+            <aside class="order-summary">
+                <h2>Order summary</h2>
+                <div><span>Subtotal</span><strong>@FormatUsd(ShoppingCart.Subtotal)</strong></div>
+                <div><span>Shipping</span><span>@(ShoppingCart.Subtotal >= 55 ? "Free" : "$6.00")</span></div>
+                <div class="summary-total"><span>Estimated total</span><strong>@FormatUsd(EstimatedTotal)</strong></div>
+                <button class="button button-primary checkout-button" @onclick="ShowDemoMessage">Continue to checkout</button>
+                @if (_showDemoMessage)
+                {
+                    <p class="demo-message" role="status">Checkout is deliberately reserved for a live Copilot feature demo.</p>
+                }
+            </aside>
+        </div>
+    }
+</section>
+
+@code {
+    private bool _showDemoMessage;
+    private decimal EstimatedTotal => ShoppingCart.Subtotal + (ShoppingCart.Subtotal >= 55 ? 0 : 6m);
+
+    private void Change(CartLine line, int delta) => ShoppingCart.SetQuantity(line.VariantId, line.Quantity + delta);
+    private void ShowDemoMessage() => _showDemoMessage = true;
+    private static string FormatEnum(string value) =>
+        System.Text.RegularExpressions.Regex.Replace(value, "([a-z])([A-Z])", "$1 $2");
+    private static string FormatUsd(decimal value) => $"${value:0.00}";
+}

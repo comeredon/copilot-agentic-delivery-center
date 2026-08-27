@@ -6,7 +6,8 @@ xUnit v3, Shouldly, NetArchTest, Testcontainers.
 
 | Project | Covers | Needs |
 |---|---|---|
-| `UnitTests` | Domain invariants, application handlers via fakes | nothing |
+| `UnitTests` | Coffee, cache-key, gate-report, and ledger invariants | nothing |
+| `Web.Tests` | Scoped storefront state such as `StoreCart` | nothing |
 | `ArchitectureTests` | Layering and conventions | nothing |
 | `QualityGate.Tests` | Canonical serialisation, hashing, schema validation | nothing |
 | `IntegrationTests` | The real API against real Postgres and Redis | a container runtime |
@@ -32,10 +33,12 @@ invisible one.
 - No `Task.Delay` for synchronisation. If you need to wait, you need a signal.
 - Testcontainers images pinned by tag. Never `latest`.
 - `TestContext.Current.CancellationToken` for real I/O.
-- Reuse `UnitTests/Fakes` rather than writing new fakes.
+- Search for existing fixtures and helpers before adding a test double. No shared fake library
+	exists in the baseline.
 
 ## What is worth testing here
 
-The guarantees, not the plumbing: domain invariants, determinism of the canonical hash, idempotency
-of a repeat sync, that a refused action is both refused *and* audited, and that a cache failure
-degrades to a direct read.
+The guarantees, not the plumbing: coffee publication invariants, catalog search/filter/facet
+behavior, current `StoreCart` rules, deterministic canonical hashes, ledger independence, and cache
+degradation. Stock concurrency, checkout idempotency, and order snapshots become targets when those
+backlog features are introduced.

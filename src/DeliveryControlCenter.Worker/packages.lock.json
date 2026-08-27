@@ -401,9 +401,7 @@
         "dependencies": {
           "DeliveryControlCenter.Contracts": "[1.0.0, )",
           "DeliveryControlCenter.Domain": "[1.0.0, )",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.11, )",
-          "Microsoft.Extensions.Logging.Abstractions": "[10.0.11, )",
-          "Microsoft.Extensions.Options": "[10.0.11, )"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.11, )"
         }
       },
       "deliverycontrolcenter.contracts": {
@@ -420,9 +418,7 @@
           "DeliveryControlCenter.Application": "[1.0.0, )",
           "Microsoft.EntityFrameworkCore": "[10.0.11, )",
           "Microsoft.EntityFrameworkCore.Relational": "[10.0.11, )",
-          "Microsoft.Extensions.Caching.Hybrid": "[10.9.0, )",
-          "Microsoft.Extensions.Http.Resilience": "[10.9.0, )",
-          "Microsoft.Extensions.Options.ConfigurationExtensions": "[10.0.11, )"
+          "Microsoft.Extensions.Caching.Hybrid": "[10.9.0, )"
         }
       },
       "deliverycontrolcenter.servicedefaults": {

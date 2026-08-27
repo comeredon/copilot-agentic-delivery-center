@@ -1,6 +1,6 @@
 ---
 name: publish-agent-evidence
-description: Normalize review, threat, and analysis findings into the machine-checkable evidence schema. Use whenever an agent produces a finding that should survive the session. Do NOT use for the gate verdict itself — that is the quality report, not evidence.
+description: Normalize review, threat, and analysis findings to the agent-evidence schema, save a local artifact, and publish only when a connected evidence sink exists. Use for advisory findings, never for the gate verdict.
 ---
 
 # Publish agent evidence
@@ -12,11 +12,11 @@ finding that matters becomes a record against `schemas/agent-evidence.schema.jso
 
 ```jsonc
 {
-  "source": "threat-model",        // build | test | analyzer | architecture | threat-model | review | documentation
-  "severity": "high",              // info | low | medium | high | critical
-  "summary": "Issue body content is passed to the project field writer without validation, so an attacker-authored issue can set an arbitrary field value.",
+  "source": "review",             // build | test | analyzer | architecture | threat-model | review | documentation
+  "severity": "info",             // info | low | medium | high | critical
+  "summary": "Catalog filters remain in the SQL query before facet aggregation, so catalog growth does not require application-side materialization.",
   "model": "claude-opus-5",
-  "references": ["src/DeliveryControlCenter.Infrastructure/GitHub/GuardedProjectWriter.cs#L30"]
+  "references": ["src/DeliveryControlCenter.Infrastructure/Persistence/CoffeeCatalogRepository.cs#L97"]
 }
 ```
 
@@ -26,8 +26,8 @@ State, in this order: **what is wrong**, **the precondition**, **the consequence
 stops at "what is wrong" leaves the reader to guess whether it matters.
 
 Bad: *"Input validation could be improved."*
-Good: *"`evidenceValue` reaches the project writer unvalidated; any user who can open an issue can
-therefore set an arbitrary Project field value once writes are enabled."*
+Good: *"The proposed review body is rendered as raw HTML; any account allowed to submit a review
+could therefore execute script in another customer's browser."*
 
 ## Choosing severity
 
@@ -41,8 +41,22 @@ Severity is about consequence, not about how hard the fix is.
 | `low` | Maintainability or clarity, no behavioural impact |
 | `info` | An observation worth recording, including "I looked at X and found nothing" |
 
-Record the `info` findings. "Reviewed the sync path for SSRF; the base address is fixed in options
-and is not caller-influenced" proves the surface was examined, and that is what an auditor asks for.
+Record the `info` findings. "Reviewed image rendering; the change introduces no server-side URL
+fetch" proves the surface was examined, and that is what an auditor asks for.
+
+## Store and publish
+
+1. Write one record per finding under `artifacts/agent-evidence/`. The directory is git-ignored and
+  is local session evidence, not durable publication.
+2. Confirm the record uses only fields and enum values allowed by
+  `schemas/agent-evidence.schema.json`. The baseline has no evidence-schema validator; do not claim
+  schema validation merely because the JSON parses.
+3. If `preflight-github-delivery` reports a connected evidence sink, publish the record to the
+  designated pull request or artifact store and read it back.
+4. Otherwise report `local-only` and the artifact path. Never say "published" for an ignored file.
+
+The gate does not ingest advisory evidence today. Evidence can inform a human or route a repair,
+but it cannot change a deterministic gate result.
 
 ## Rules
 

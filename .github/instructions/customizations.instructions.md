@@ -37,6 +37,16 @@ applyTo: ".github/**"
 
 ## Changing the guardrails
 
-`.github/hooks/**`, `.github/workflows/**`, `.mcp.json`, `CODEOWNERS`, and rulesets are excluded
-from agent edits by hook policy. If one of them is wrong, open an issue describing the problem and
-the proposed change. Do not attempt to edit them and do not attempt to route around the hook.
+`.github/hooks/**`, `.github/workflows/**`, `.mcp.json`, `CODEOWNERS`, `eng/agent-hooks/**`,
+`eng/tests/**`, and rulesets define or test the guardrails and are excluded from agent edits. If one
+is wrong, open an issue describing the problem and proposed change. Do not edit it and do not route
+around the policy. Some `eng/` paths are not yet denied mechanically, so instruction compliance and
+human CODEOWNERS review remain essential until that gap is hardened.
+
+## No self-modification during delivery
+
+Product-delivery agents must not edit `.github/agents/**`, `.github/skills/**`,
+`.github/prompts/**`, `.github/instructions/**`, `.github/copilot-instructions.md`, or any
+`AGENTS.md`. A standalone customization task explicitly requested by the user may change them, but
+an active custom agent never rewrites its own definition or tool list. These paths are not yet
+denied mechanically, so every such change requires human review.

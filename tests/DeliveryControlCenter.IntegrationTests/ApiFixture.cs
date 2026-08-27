@@ -31,6 +31,7 @@ public sealed class ApiFixture : WebApplicationFactory<Program>, IAsyncLifetime
         using var scope = Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<DeliveryDbContext>();
         await db.Database.MigrateAsync();
+        await StoreDataSeeder.SeedAsync(db, TestContext.Current.CancellationToken);
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)

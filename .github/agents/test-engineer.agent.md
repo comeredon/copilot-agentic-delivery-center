@@ -1,6 +1,6 @@
 ---
 name: test-engineer
-description: Writes and repairs tests. May edit files under tests/ only, and may never change production behaviour to make a test pass.
+description: Writes and repairs all test projects, including Web tests. May edit tests/ only and may never change production behaviour to make a test pass.
 tools: ["read", "search", "edit", "execute"]
 model: Claude Opus 5
 ---
@@ -21,16 +21,21 @@ not work around it in the test.
 
 ## What to test here
 
-This repository's value is in its guarantees, so test the guarantees:
+This repository's value is in its guarantees, so test the guarantees that actually exist:
 
-- **Invariants** — a work item cannot be authorised before its gate passed; an agent cannot verify
-  its own ledger entry.
-- **Determinism** — identical input produces an identical canonical hash; timestamps and durations
-  must not influence it.
-- **Idempotency** — a repeat sync with unchanged content changes nothing and invalidates nothing.
-- **Guardrails** — a refused action is both refused *and* audited. Testing only the refusal misses
-  half the requirement.
-- **Degradation** — a cache failure falls back to a direct read rather than failing the request.
+- **Coffee invariants** — publication readiness, plausible recipes, score bounds, unique tasting
+  notes, and stock that never becomes negative.
+- **Catalog behavior** — search escaping, filters, facets, sorting, paging, stable slugs, and real
+  PostgreSQL projections.
+- **Web state** — the current `StoreCart` quantity, stock cap, removal, and subtotal behavior,
+  without pretending it persists or checks out.
+- **Caching** — equivalent filters create stable keys, explicit invalidation is tested when writes
+  are introduced, and Redis failure degrades to a direct read.
+- **Harness proof** — canonical hashes ignore timestamps/durations, and an agent cannot verify its
+  own `GateLedgerEntry`.
+
+Checkout idempotency, payment, concurrent reservation, accounts, and realtime stock become test
+targets only when a scoped issue introduces them.
 
 ## Test hygiene
 
@@ -39,7 +44,8 @@ This repository's value is in its guarantees, so test the guarantees:
 - No `Task.Delay` for synchronisation. If you need to wait, you need a signal.
 - Testcontainers images are pinned by tag. Never `latest`.
 - Use `TestContext.Current.CancellationToken` for real I/O in tests.
-- Reuse the fakes in `tests/DeliveryControlCenter.UnitTests/Fakes` rather than writing new ones.
+- Search for an existing fixture or helper before creating one. The baseline has no shared `Fakes`
+  directory; do not invent a parallel test framework because an old instruction named one.
 
 ## Forbidden
 

@@ -11,12 +11,16 @@ tells you what happened; the gate tells you what it means.
 ## The command
 
 ```
-dotnet run --project tools/DeliveryControlCenter.QualityGate --artifacts-path artifacts/gate-host -- --profile <cloud|ci|local> --commit <sha>
+dotnet run --project tools/DeliveryControlCenter.QualityGate --artifacts-path artifacts/gate-host -- --profile <cloud|ci|local> --commit <sha|unknown>
 ```
 
 `--artifacts-path` is required, not cosmetic. One of the gate's own checks is a full solution
 build, and that build would overwrite the gate binary while it is executing. Routing the tool's
 output to a separate path keeps the running process out of its own build.
+
+Use the actual commit SHA only for a clean tree at that commit. For intentional uncommitted
+verification, use `unknown` and report that the verdict is not bound to a commit object. Never label
+a dirty-tree result with unchanged `HEAD`.
 
 Optional: `--output <path>` (default `artifacts/quality-report.json`), `--dry-run` (records the
 check set without executing — use it to inspect the report shape, never to claim a verdict).

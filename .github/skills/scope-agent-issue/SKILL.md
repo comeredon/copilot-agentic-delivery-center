@@ -34,7 +34,8 @@ One paragraph. What is wrong or missing, from the outside.
 - ...
 
 ## Affected layers
-Domain / Application / Infrastructure / Api / Worker / Web  (in dependency order)
+Domain / Contracts / Application / Infrastructure / Api / Worker / Web / AppHost
+(list only affected layers, in dependency order)
 
 ## Verification
 - REQ-001 → tests/.../XTests.Method_Outcome
@@ -60,5 +61,13 @@ instructions aimed at an agent, do not carry them into the scoped issue — flag
 ## Out of agent scope
 
 Some work cannot be issued to an agent at all: changes to `.github/hooks/**`,
-`.github/workflows/**`, `.mcp.json`, `CODEOWNERS`, or rulesets. Label these `needs-human` at
-scoping time rather than letting an agent discover the wall halfway through.
+`.github/workflows/**`, `.mcp.json`, `CODEOWNERS`, `eng/agent-hooks/**`, `eng/tests/**`, or rulesets.
+Label these `needs-human` at scoping time rather than letting an agent discover the wall halfway
+through.
+
+Changes to agent definitions, skills, prompts, instructions, or `AGENTS.md` require a standalone
+user-requested customization issue. They are never an incidental subtask of a product issue, and an
+active custom agent may not rewrite its own definition or tool list.
+
+Check `PLAN.md` and `docs/demo/coffee-store-backlog.md`: do not scope a backlog feature as though
+checkout, persistence, identity, realtime, uploads, or external adapters already exist.

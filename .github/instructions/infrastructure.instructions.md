@@ -1,9 +1,9 @@
 ---
-description: Persistence, caching, and GitHub adapter conventions.
+description: Store persistence, caching, seeding, and external adapter conventions.
 applyTo: "src/DeliveryControlCenter.Infrastructure/**"
 ---
 
-# Infrastructure conventions
+# Store infrastructure conventions
 
 ## Entity Framework
 
@@ -20,26 +20,30 @@ applyTo: "src/DeliveryControlCenter.Infrastructure/**"
 
 ## Caching
 
-- Keys come from `CacheKeys` and always carry the `dcc:v1:` prefix. Bump the version segment when
+- Store keys come from `StoreCacheKeys` and carry `ninth-parallel:v1:`. Bump the version when
   a cached shape changes; never hand-roll a key at a call site.
-- Reads are cache-aside via `IDeliveryCache`. Writes invalidate explicitly — never rely on TTL
+- Reads are cache-aside via `IStoreCache`. Writes invalidate explicitly — never rely on TTL
   expiry to publish a change.
 - A cache failure must degrade to a direct read and increment the error counter. It must never
   fail the request.
 
-## GitHub adapters
+## Current catalog baseline
 
-- `IGitHubReader` is read-only by construction. Do not add a method that mutates.
-- Always send the stored ETag as `If-None-Match` and honour `304 Not Modified` by returning
-  `RemoteSyncResult.Unchanged`. Burning rate limit on unchanged data is a defect.
-- On `403`/`429`, keep the previous cursor and log the fact of throttling — never the response body.
-- Never log, echo, or embed a token. The reader gets its token from `IGitHubTokenProvider`; nothing
-  else should ever see it.
-- The base address is fixed in options. Do not accept a URL from a caller, a work item, or a
-  configuration value that an agent can influence.
+- Catalog list and detail projections may be cached; authoritative stock reservation may not.
+- Seed data is deterministic: fixed aggregate IDs and stable slugs support screenshots and tests.
+- The current repository and API are read-only. `Coffee.ReserveVariant` proves the stock invariant,
+  but no checkout endpoint or stock-reservation transaction exists yet.
 
-## Project writes
+## When a commerce issue adds writes
 
-`GuardedProjectWriter` is the only write path and is disabled unless both `GitHub:Enabled` and
-`GitHub:EnableProjectWrites` are true. Both the allowed and the blocked path write an audit event.
-Do not add a second write path.
+- Prices come from persisted variants. Never trust a client-supplied price.
+- Reserve stock against PostgreSQL with the domain invariant and `Version` concurrency token in one
+  transaction. Cached stock is never checkout authority.
+- A write that changes a catalog projection invalidates list, detail, and producer tags explicitly.
+- Retryable operations such as checkout, payment, email, and scheduled work require idempotency.
+
+## External adapters
+
+The baseline has no payment, email, or image-storage adapter. When a bounded issue introduces one,
+define the port in Application and the adapter here. A credential-bearing integration requires a
+separate threat review and configuration through user-secrets or environment variables.

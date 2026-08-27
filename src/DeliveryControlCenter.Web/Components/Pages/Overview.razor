@@ -1,67 +1,95 @@
 @page "/"
 @rendermode InteractiveServer
-@inject DeliveryApiClient Api
-@inject DeliveryRealtimeClient Realtime
-@implements IAsyncDisposable
+@inject CoffeeStoreApiClient StoreApi
 
-<PageTitle>Overview</PageTitle>
+<PageTitle>Ninth Parallel Coffee Roasters</PageTitle>
 
-<h1>Delivery overview</h1>
+<section class="store-hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <p class="eyebrow light">Roasting along the coffee belt</p>
+        <h1>Ninth Parallel</h1>
+        <p class="hero-copy">
+            Character-driven coffees with the farm, process, roast, and recipe information
+            needed to make every bag legible.
+        </p>
+        <div class="hero-actions">
+            <a class="button button-primary" href="/shop">Shop the current roast</a>
+            <a class="text-link light" href="/transparency">Follow a coffee from farm to cup</a>
+        </div>
+    </div>
+</section>
 
-@if (_overview is null)
-{
-    <p class="muted">Waiting for the first sync cycle&hellip;</p>
-}
-else
-{
-    <p class="muted">
-        Repository <strong>@_overview.Repository</strong> &middot;
-        last synced @(_overview.LastSyncedAtUtc?.ToString("u") ?? "never")
-    </p>
-
-    <div class="metric-grid">
-        <div class="metric"><span class="metric-value">@_overview.OpenIssues</span><span class="metric-label">Open issues</span></div>
-        <div class="metric"><span class="metric-value">@_overview.OpenPullRequests</span><span class="metric-label">Open pull requests</span></div>
-        <div class="metric"><span class="metric-value">@_overview.AwaitingHumanAuthorization</span><span class="metric-label">Awaiting human</span></div>
-        <div class="metric @(_overview.GateFailures > 0 ? "metric-alert" : string.Empty)"><span class="metric-value">@_overview.GateFailures</span><span class="metric-label">Gate failures</span></div>
-        <div class="metric @(_overview.NeedsHuman > 0 ? "metric-alert" : string.Empty)"><span class="metric-value">@_overview.NeedsHuman</span><span class="metric-label">Needs human</span></div>
-        <div class="metric"><span class="metric-value">@_overview.GatePassRate.ToString("P0")</span><span class="metric-label">Gate pass rate</span></div>
+<section class="content-section releases-section">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">Current releases</p>
+            <h2>Coffees with a point of view</h2>
+        </div>
+        <a class="text-link" href="/shop">View all coffees</a>
     </div>
 
-    <h2>Stage breakdown</h2>
-    <table class="data-table">
-        <thead><tr><th>Stage</th><th>Count</th></tr></thead>
-        <tbody>
-        @foreach (var stage in _overview.StageBreakdown)
-        {
-            <tr><td>@stage.Stage</td><td>@stage.Count</td></tr>
-        }
-        </tbody>
-    </table>
-}
+    @if (_catalog is null)
+    {
+        <div class="loading-state">Loading this week's roast list…</div>
+    }
+    else
+    {
+        <div class="coffee-grid">
+            @foreach (var coffee in _catalog.Items.Take(4))
+            {
+                <DeliveryControlCenter.Web.Components.Store.CoffeeCard Coffee="coffee" />
+            }
+        </div>
+    }
+</section>
+
+<section class="origin-feature">
+    <div class="origin-feature-image">
+        <img src="https://images.unsplash.com/photo-1524350876685-274059332603?auto=format&fit=crop&w=1800&q=88"
+             alt="Coffee drying on raised beds at a high-altitude washing station" />
+    </div>
+    <div class="origin-feature-copy">
+        <p class="eyebrow">Origin dispatch · Kirinyaga</p>
+        <h2>Why Kenyan coffee can taste like blackcurrant</h2>
+        <p>
+            Variety matters, but so do cool mountain nights, selective picking, double fermentation,
+            and the mineral composition of the water used for washing. Our Kii AA page shows the
+            entire chain instead of reducing it to three flavor words.
+        </p>
+        <a class="button button-secondary" href="/coffee/kii-aa">Explore Kii AA</a>
+    </div>
+</section>
+
+<section class="content-section coffee-literacy">
+    <div class="section-heading compact">
+        <div>
+            <p class="eyebrow">Read the bag</p>
+            <h2>Three details that change the cup</h2>
+        </div>
+    </div>
+    <div class="literacy-grid">
+        <article>
+            <span class="literacy-index">01</span>
+            <h3>Elevation</h3>
+            <p>Cooler nights slow cherry maturation, often concentrating sugars and preserving aromatic complexity.</p>
+        </article>
+        <article>
+            <span class="literacy-index">02</span>
+            <h3>Process</h3>
+            <p>Washed coffees often foreground clarity; naturals and honeys retain more fruit around the seed while drying.</p>
+        </article>
+        <article>
+            <span class="literacy-index">03</span>
+            <h3>Rest</h3>
+            <p>Freshly roasted coffee releases carbon dioxide. A deliberate rest opens sweetness and makes extraction steadier.</p>
+        </article>
+    </div>
+</section>
 
 @code {
-    private DeliveryOverviewDto? _overview;
+    private CatalogPageDto? _catalog;
 
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadAsync();
-        Realtime.Changed += OnChangedAsync;
-        await Realtime.EnsureConnectedAsync();
-    }
-
-    private async Task LoadAsync() => _overview = await Api.GetOverviewAsync();
-
-    private async Task OnChangedAsync(DeliveryNotification notification)
-    {
-        // Refetch rather than trusting the pushed payload.
-        await LoadAsync();
-        await InvokeAsync(StateHasChanged);
-    }
-
-    public ValueTask DisposeAsync()
-    {
-        Realtime.Changed -= OnChangedAsync;
-        return ValueTask.CompletedTask;
-    }
+    protected override async Task OnInitializedAsync() =>
+        _catalog = await StoreApi.SearchAsync(sort: "score", pageSize: 4);
 }

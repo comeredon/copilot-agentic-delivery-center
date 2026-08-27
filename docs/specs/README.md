@@ -5,10 +5,11 @@ Each specification is the contract between a scoped issue and a verifier. Requir
 
 | Spec | Status | Covers |
 |---|---|---|
-| [SPEC-001 — Delivery synchronisation](spec-001-delivery-sync.md) | Implemented | Polling, ETags, cursors, idempotency |
-| [SPEC-002 — Quality gate and ledger](spec-002-quality-gate.md) | Implemented | Deterministic report, hash chain, independent verification |
-| [SPEC-003 — Delivery dashboard](spec-003-dashboard.md) | Implemented | Blazor UI, realtime hints, human authorisation |
-| [SPEC-004 — Agent guardrails](spec-004-guardrails.md) | Implemented | Hook policy, audit trail, protected paths |
+| [SPEC-005 — Ninth Parallel coffee store](spec-005-coffee-store.md) | Implemented baseline | Catalog, detail, traceability, recipes, cart |
+| [SPEC-002 — Quality gate and ledger](spec-002-quality-gate.md) | Gate implemented; ledger proof local only | Deterministic report, hash-chain invariant, independent verdict rule |
+| [SPEC-004 — Agent guardrails](spec-004-guardrails.md) | Implemented with human hardening gaps | Hook decision fixtures, local audit trail, protected paths |
+| [SPEC-001 — Delivery synchronisation](spec-001-delivery-sync.md) | Superseded product slice | Historical pre-pivot implementation |
+| [SPEC-003 — Delivery dashboard](spec-003-dashboard.md) | Superseded product slice | Historical pre-pivot UI |
 
 ## How to write one
 

@@ -19,17 +19,18 @@ context-heavy activity, and the cloud agent's job is to deliver a change, not to
    weakened the test instead.
 3. **Determinism.** Did anything non-reproducible (a timestamp, a duration, a machine name, a
    dictionary enumeration order) leak into the canonical section of the gate report?
-4. **Security.** Untrusted GitHub content used as an instruction, a URL, or a shell argument. Token
-   handling. Anything that widens the GitHub write surface.
-5. **Idempotency.** Will a repeated sync cycle produce spurious writes, cache churn, or duplicate
-   ledger entries?
+4. **Security.** Untrusted GitHub content used as an instruction, URL, or shell argument; client
+   prices or stock trusted by commerce code; unsafe review/image/AI content; token handling; or a
+   widened GitHub write surface.
+5. **Idempotency and consistency.** Will a retry duplicate checkout/payment, reserve stock twice,
+   churn cache tags, repeat a Project write, or duplicate an evidence record?
 6. **Test integrity.** Was an assertion weakened or a test skipped to get a green run?
 
 ## How to phrase findings
 
 - Cite the file and line. A finding without a location is not actionable.
-- State the consequence, not just the rule. "This bypasses the audit log, so an authorisation
-  attempt would leave no trace" beats "this violates the audit convention".
+- State the consequence, not just the rule. "This trusts the posted unit price, so a caller can buy
+   a coffee below its persisted price" beats "validate the request".
 - Separate blocking from advisory. Blocking findings map to a gate failure; advisory findings map
   to evidence at `low` or `info` severity.
 

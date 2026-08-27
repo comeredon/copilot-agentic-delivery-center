@@ -10,13 +10,12 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddOutputCache();
 
-builder.Services.AddHttpClient<DeliveryApiClient>(client =>
+builder.Services.AddHttpClient<CoffeeStoreApiClient>(client =>
 {
-    // Service discovery resolves this to the API resource address at runtime.
-    client.BaseAddress = new Uri("https+http://api");
+    client.BaseAddress = new Uri("http://api");
 });
 
-builder.Services.AddScoped<DeliveryRealtimeClient>();
+builder.Services.AddScoped<StoreCart>();
 
 var app = builder.Build();
 
@@ -28,9 +27,9 @@ else
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();
+    app.UseHttpsRedirection();
 }
 
-app.UseHttpsRedirection();
 app.UseAntiforgery();
 app.UseOutputCache();
 
