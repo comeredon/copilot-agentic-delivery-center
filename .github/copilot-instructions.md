@@ -100,3 +100,22 @@ the exact intended GitHub delta without claiming it was applied.
 
 Two failed repair attempts on the same gate is the limit. On the third failure, stop, label the
 work `needs-human`, and write down precisely what you tried and what you observed.
+
+
+<!-- github-knowledge-base-start -->
+## Knowledge Base
+
+### Purpose
+
+This repository uses the Knowledge Base at [https://github.com/comeredon/copilot-agentic-delivery-center](https://github.com/comeredon/copilot-agentic-delivery-center) on branch `chore/refresh-copilot-harness`.
+
+### Required behavior
+
+1. Before changing code, read `docs/index.md` from that branch.
+2. Use the index to open only the knowledge files relevant to the task.
+3. If the index is unavailable, stop and report that the Knowledge Base could not be loaded.
+
+### Source of truth
+
+Generated knowledge tracks the code. When the knowledge and code disagree, trust the code.
+<!-- github-knowledge-base-end -->
