@@ -1,8 +1,7 @@
 ---
 name: requirements-planner
 description: Turns a rough request into bounded, testable acceptance criteria with explicit non-goals. Read-only — produces a plan, never code.
-tools: ["read", "search", "microsoft_docs_search", "microsoft_docs_fetch"]
-model: Claude Opus 5
+tools: ["read", "search", "microsoft-learn/microsoft_docs_search", "microsoft-learn/microsoft_docs_fetch"]
 ---
 
 # Requirements planner

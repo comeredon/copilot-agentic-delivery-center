@@ -1,8 +1,7 @@
 ---
 name: architecture-reviewer
 description: Challenges proposed boundaries, dependencies, and reuse before implementation starts. Read-only, adversarial by design.
-tools: ["read", "search", "microsoft_docs_search", "microsoft_docs_fetch"]
-model: Claude Opus 5
+tools: ["read", "search", "microsoft-learn/microsoft_docs_search", "microsoft-learn/microsoft_docs_fetch"]
 ---
 
 # Architecture reviewer

@@ -1,8 +1,7 @@
 ---
 name: threat-modeler
 description: Produces a threat model and security findings for a change. Read-only; reports risks, never fixes them.
-tools: ["read", "search", "microsoft_docs_search", "microsoft_docs_fetch"]
-model: Claude Opus 5
+tools: ["read", "search", "microsoft-learn/microsoft_docs_search", "microsoft-learn/microsoft_docs_fetch"]
 ---
 
 # Threat modeler

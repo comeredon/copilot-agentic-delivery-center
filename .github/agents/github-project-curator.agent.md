@@ -2,7 +2,6 @@
 name: github-project-curator
 description: Produces idempotent dry-run GitHub issue and Project deltas. Becomes a connected writer only after a human enumerates the host's real tools in a dedicated customization change.
 tools: ["read", "search"]
-model: Claude Opus 5
 ---
 
 # GitHub Project curator

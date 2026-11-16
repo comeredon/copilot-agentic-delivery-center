@@ -7,11 +7,11 @@ The distinction matters:
 
 - **Ninth Parallel is the product.** Customers browse traceable coffees, compare processing and
   sensory data, open producer stories, scale recipes, choose bag/grind variants, and build a cart.
-- **GitHub is the delivery system.** Projects holds the roadmap; Copilot agents plan and implement
+- **GitHub is the delivery system.** Projects holds the roadmap; GitHub Copilot agents plan and implement
   features; independent agents review them; the deterministic gate verifies them; a human decides
   whether to merge.
 
-The store does not know Copilot exists. That makes the demonstration representative of a real
+The store does not know GitHub Copilot exists. That makes the demonstration representative of a real
 application rather than a dashboard about the demonstration itself.
 
 ## Storefront
@@ -33,8 +33,14 @@ provisioned into a GitHub Project for a connected demo; no card is charged by th
 
 ## Run It
 
-Prerequisites: .NET 10 SDK (pinned by `global.json`) and Docker Desktop or another supported
-container runtime.
+Prerequisites: the .NET 10 SDK pinned by `global.json`, Docker Desktop or another supported
+container runtime, and PowerShell 7+ (`pwsh`) for the demo fixtures. Bash and `jq` are also required
+for the Linux/macOS hook scripts. Verify `dotnet --version`, `docker info`, `pwsh --version`, and
+`jq --version` before the demo; an installed Docker client alone is not sufficient.
+
+Committed AppHost lockfiles cover SDK hosts `linux-x64` and `win-x64`. The Windows dependency graph
+was checked with a Linux SDK RID override, not on Windows; run locked restore on the actual Windows
+demo machine before presenting. Other SDK hosts need the reviewed lockfile procedure below first.
 
 Configure the persistent PostgreSQL password once. The generated value is written only to the
 AppHost user-secrets store:
@@ -48,7 +54,7 @@ Remove-Variable postgresPassword
 Then start the full topology:
 
 ```powershell
-dotnet restore
+dotnet restore --locked-mode
 dotnet build DeliveryControlCenter.slnx
 dotnet run --project src/DeliveryControlCenter.AppHost
 ```
@@ -99,7 +105,7 @@ workflow paths in one isolated commit.
 
 `--artifacts-path` keeps the running gate binary outside the solution build that the gate performs.
 
-## Copilot Harness
+## GitHub Copilot Harness
 
 | Layer | Location | Purpose |
 |---|---|---|
@@ -119,6 +125,48 @@ at a green pull request. A human authorizes the merge.
 The local repository configures Microsoft Learn MCP. GitHub issue/Project/PR tools, an `origin`
 remote, and durable evidence/ledger publication are connected-demo prerequisites, not product
 runtime dependencies. Run `preflight-github-delivery` before claiming those scenes are available.
+
+Agent profiles inherit the host's selected/default model rather than requiring a fixed model name.
+Learn tool grants use explicit `microsoft-learn/<tool>` names and do not grant any GitHub writes.
+See [MCP configuration](docs/mcp-configuration.md) for host setup and capability checks.
+Confirm all 11 custom agents appear in the host's agent picker and invoke `requirements-planner`
+before the demo. If names are unavailable, reload/restart the host after applying the profiles;
+using a built-in reviewer instead does not demonstrate custom-agent routing.
+
+AppHost has separate `packages.linux-x64.lock.json` and `packages.win-x64.lock.json` files because
+Aspire selects its Dashboard and orchestration packages for the SDK host's runtime identifier.
+The host SDK and hosting integrations use Aspire 13.6.5, the fixed release for
+[the Dashboard advisory](https://github.com/advisories/GHSA-4g86-54fm-h9h8) and
+[the hosting advisory](https://github.com/advisories/GHSA-f7vh-h5g3-7jrh); NuGet auditing remains enabled.
+Maintain the SDK pin in AppHost's project and the hosting pins in `Directory.Packages.props` together.
+AppHost explicitly retains the supported package-based `dotnet run` workflow, without CLI-only
+features. Only its optional CLI-bundle migration warning (`ASPIRE010`) is suppressed; the gate's
+warnings-as-errors policy and security diagnostics are unchanged.
+Other SDK host platforms require a reviewed lockfile generated with
+`dotnet restore src/DeliveryControlCenter.AppHost --force-evaluate` before locked restore can be
+used there. Do not regenerate locks during a live demo or disable locked mode to hide a failure.
+
+### Before calling the demo ready
+
+The checked-in workflows filter `main`. If the demo baseline/default branch has another name, a
+human must align both workflows' push/pull-request filters before relying on automatic checks.
+There is no `.github/workflows/copilot-setup-steps.yml`; a human must configure the pinned SDK,
+PowerShell, and hook dependencies for repeatable cloud-agent startup. Agents cannot edit workflows.
+The human-owned follow-up is [#4](https://github.com/comeredon/copilot-agentic-delivery-center/issues/4).
+
+The hook registration and decision payloads also require human review against the
+[GitHub Copilot hooks reference](https://docs.github.com/en/copilot/reference/hooks-reference).
+Passing PowerShell decision fixtures does not prove that the host loads the hooks or enforces
+their decisions. The determinism fixture likewise needs human hardening: it does not check gate
+exit codes/verdicts or distinguish a dirty tree from `HEAD`. Until fixed, use two explicit gate
+runs with `--commit unknown` for uncommitted changes, require both to pass, and compare their
+canonical hashes and envelope timestamps.
+Hook integration is tracked in [#5](https://github.com/comeredon/copilot-agentic-delivery-center/issues/5);
+fixture hardening is tracked in [#6](https://github.com/comeredon/copilot-agentic-delivery-center/issues/6).
+
+Verify repository visibility and branch protection in GitHub settings separately; neither a local
+gate nor the checked-in files establish those settings. Projects and durable evidence/ledger
+publication remain unavailable unless their exact tools and sinks pass preflight.
 
 ## Suggested Live Demo
 

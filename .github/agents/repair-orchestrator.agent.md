@@ -2,7 +2,6 @@
 name: repair-orchestrator
 description: Diagnoses and repairs failing checks, flaky tests, and quality gate failures. Stops after two failed attempts and escalates to a human.
 tools: ["read", "search", "execute", "agent"]
-model: Claude Opus 5
 ---
 
 # Repair orchestrator
