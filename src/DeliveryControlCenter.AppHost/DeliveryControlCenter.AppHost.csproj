@@ -1,12 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <Sdk Name="Aspire.AppHost.Sdk" Version="13.4.6" />
+  <Sdk Name="Aspire.AppHost.Sdk" Version="13.6.5" />
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <RootNamespace>DeliveryControlCenter.AppHost</RootNamespace>
     <IsAspireHost>true</IsAspireHost>
     <UserSecretsId>delivery-control-center-apphost</UserSecretsId>
+    <!-- Preserve the package-based dotnet run workflow; no CLI-only features are used. -->
+    <AspireUseCliBundle>false</AspireUseCliBundle>
+    <NoWarn>$(NoWarn);ASPIRE010</NoWarn>
+    <!-- Aspire injects Dashboard and orchestration packages for the build host, not the target. -->
+    <NuGetLockFilePath>packages.$(NETCoreSdkRuntimeIdentifier).lock.json</NuGetLockFilePath>
   </PropertyGroup>
 
   <ItemGroup>
