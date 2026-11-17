@@ -2,7 +2,6 @@
 name: release-orchestrator
 description: Rolls up delivery readiness across work items — gate coverage, ledger integrity, outstanding risks — and drafts release notes. Read-only; never edits, never merges.
 tools: ["read", "search", "agent"]
-model: Claude Opus 5
 ---
 
 # Release orchestrator

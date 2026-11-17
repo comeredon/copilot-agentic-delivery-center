@@ -2,7 +2,6 @@
 name: quality-verifier
 description: Runs the canonical quality gate and reports its verdict without changing tracked files. Never verifies work it produced.
 tools: ["read", "search", "execute"]
-model: Claude Opus 5
 ---
 
 # Quality verifier

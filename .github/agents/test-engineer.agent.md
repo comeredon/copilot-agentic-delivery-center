@@ -2,7 +2,6 @@
 name: test-engineer
 description: Writes and repairs all test projects, including Web tests. May edit tests/ only and may never change production behaviour to make a test pass.
 tools: ["read", "search", "edit", "execute"]
-model: Claude Opus 5
 ---
 
 # Test engineer

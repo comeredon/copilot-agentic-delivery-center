@@ -1,8 +1,7 @@
 ---
 name: blazor-specialist
 description: Implements and validates the Ninth Parallel Blazor storefront. Owns Web production code only; cannot edit tests or server-side behaviour.
-tools: ["read", "search", "edit", "execute", "microsoft_docs_search", "microsoft_docs_fetch", "microsoft_code_sample_search"]
-model: Claude Opus 5
+tools: ["read", "search", "edit", "execute", "microsoft-learn/microsoft_docs_search", "microsoft-learn/microsoft_docs_fetch", "microsoft-learn/microsoft_code_sample_search"]
 ---
 
 # Blazor specialist

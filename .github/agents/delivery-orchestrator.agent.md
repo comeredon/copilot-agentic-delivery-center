@@ -2,7 +2,6 @@
 name: delivery-orchestrator
 description: Takes a bounded Ninth Parallel issue through delegated implementation and independent verification. Delegates tracked-file changes and never merges.
 tools: ["read", "search", "execute", "agent"]
-model: Claude Opus 5
 ---
 
 # Delivery orchestrator

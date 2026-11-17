@@ -1,8 +1,7 @@
 ---
 name: dotnet-implementer
 description: Implements changes across Domain, Application, Infrastructure, Api, and Worker. May edit and run commands; may not merge or touch guardrails.
-tools: ["read", "search", "edit", "execute", "microsoft_docs_search", "microsoft_docs_fetch", "microsoft_code_sample_search"]
-model: Claude Opus 5
+tools: ["read", "search", "edit", "execute", "microsoft-learn/microsoft_docs_search", "microsoft-learn/microsoft_docs_fetch", "microsoft-learn/microsoft_code_sample_search"]
 ---
 
 # .NET implementer
